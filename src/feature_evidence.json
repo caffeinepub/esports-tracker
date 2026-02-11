@@ -1,0 +1,90 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-implement-an-mvp-only-google-style-identity-login-flow-that-results-in-a-backend-session-for-the-caller-and-stores-only-identity-fields-email-name-avatar-without-assigning-any-role-during-login",
+      "featureTitle": "Implement an MVP-only Google-style identity login flow that results in a backend session for the caller and stores only identity fields (email, name, avatar) without assigning any role during login.",
+      "files": [
+        "frontend/src/components/AuthenticatedApp.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/LoginPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-15"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-frontend-login-page-to-use-a-google-style-login-button-and-after-login-route-users-based-on-backend-getcurrentuser-as-follows-if-usertype-is-null-redirect-to-select-role-if-player-go-to-player-onboarding-if-team-go-to-team-onboarding",
+      "featureTitle": "Update the frontend login page to use a Google-style login button and, after login, route users based on backend `getCurrentUser()` as follows: if `userType` is null redirect to `/select-role`; if player go to Player onboarding; if team go to Team onboarding.",
+      "files": [
+        "frontend/src/components/AuthenticatedApp.tsx",
+        "frontend/src/pages/ProfileSetupPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-19"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-adjust-a-dedicated-role-selection-route-select-role-that-is-mandatory-when-usertype-is-null-and-includes-exactly-two-role-choices-player-team-and-a-clear-warning-that-the-choice-is-permanent-selecting-a-role-calls-setusertype-and-then-routes-to-the-appropriate-onboarding-flow",
+      "featureTitle": "Create/adjust a dedicated role-selection route `/select-role` that is mandatory when `userType` is null and includes exactly two role choices (Player / Team) and a clear warning that the choice is permanent; selecting a role calls `setUserType` and then routes to the appropriate onboarding flow.",
+      "files": [
+        "frontend/src/components/AuthenticatedApp.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/RoleSelectionPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-20"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-frontend-routing-guards-so-that-authenticated-users-with-usertype-unset-null-are-always-redirected-to-select-role-and-users-with-usertype-set-are-prevented-from-accessing-select-role-redirect-to-their-correct-onboarding-dashboard",
+      "featureTitle": "Add frontend routing guards so that authenticated users with `userType` unset (null) are always redirected to `/select-role`, and users with `userType` set are prevented from accessing `/select-role` (redirect to their correct onboarding/dashboard).",
+      "files": [
+        "frontend/src/components/AuthenticatedApp.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-21"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

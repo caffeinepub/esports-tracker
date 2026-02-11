@@ -1,0 +1,101 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-04T19:57:48.394Z",
+  "summary": "Diff implements a new frontend role-selection UI and adds a backend `User` type + `users` map, but it does not show the required `loginWithGoogle(googleToken)` API, explicit `/select-role` routing/guards, or backend RBAC enforcement based on immutable `userType`. Frontend still uses Internet Identity and introduces an `initializeUser` flow with placeholder identity data instead of the specified Google-style token-based login method.",
+  "missing_requirements": [
+    {
+      "id": "REQ-15",
+      "requirement": "Backend exposes `loginWithGoogle(googleToken)` that creates/updates a backend User (email/name/avatar) and leaves `userType` unset on first login; frontend provides a single \"Continue with Google\" login action and uses backend login flow.",
+      "reason": "Frontend login button text exists, but the diff shows Internet Identity `login()` being called and an `initializeUser(email,name,avatar)` mutation creating placeholder identity fields; no `loginWithGoogle(googleToken)` method is evidenced in the backend diff summary.",
+      "evidence": [
+        "frontend/src/pages/LoginPage.tsx",
+        "frontend/src/components/AuthenticatedApp.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-16",
+      "requirement": "Backend persists mapping from authenticated caller to User and `getCurrentUser()` returns caller’s User (or null if never logged in via Google flow).",
+      "reason": "Backend shows `User` type and `users` map, but the diff summary for `backend/main.mo` is truncated and does not evidence an implemented `getCurrentUser()` method or its null/not-logged-in behavior.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "requirement": "Backend implements `getCurrentUser()` and `setUserType(userType)` where `setUserType` is one-time only, rejects invalid values, and errors if already set.",
+      "reason": "Frontend calls `actor.setUserType(userType)`, but the backend diff excerpt does not show `setUserType` implementation, its one-time immutability enforcement, or invalid-value handling.",
+      "evidence": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/RoleSelectionPage.tsx",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "requirement": "Backend enforces RBAC: player-only APIs reject team/null; team-only APIs reject player/null; role-required endpoints fail clearly when `userType` is null.",
+      "reason": "No backend endpoint changes are shown that gate existing player/team APIs based on stored immutable `userType`. The backend diff excerpt only shows type/state additions (User/UserType/users map).",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "requirement": "After login completes, app calls backend `getCurrentUser()` and routes: if `userType` is null redirect to `/select-role`; if player -> Player onboarding; if team -> Team onboarding; no role assigned during login.",
+      "reason": "AuthenticatedApp renders `RoleSelectionPage` when `currentUser.userType` is falsy, but there is no evidence of routing to the dedicated `/select-role` path. Also, the app auto-initializes a user record via `initializeUser` after identity login, which is not the specified loginWithGoogle-based flow.",
+      "evidence": [
+        "frontend/src/components/AuthenticatedApp.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "requirement": "Dedicated `/select-role` route mandatory when `userType` is null with exactly two choices and permanence warning; selecting calls `setUserType` then routes to onboarding; on failure show error and re-fetch current user.",
+      "reason": "UI page exists with the two required button labels and permanence warning, and it calls `setUserType` with error display. However the diff does not evidence that it is reachable at `/select-role` (route definition not shown), nor the required behavior to re-fetch current user state on failure (it sets local error, but no explicit refetch is shown beyond react-query invalidation in the mutation onSuccess only).",
+      "evidence": [
+        "frontend/src/pages/RoleSelectionPage.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/components/AuthenticatedApp.tsx"
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "requirement": "Routing guards: if authenticated and `userType` is null always redirect to `/select-role`; if `userType` is set prevent access to `/select-role` (redirect appropriately); backend state is source of truth.",
+      "reason": "AuthenticatedApp conditionally renders RoleSelectionPage inline when `userType` is unset, but there is no evidence of actual route guards/redirects involving the `/select-role` path (no router changes shown). Preventing access to `/select-role` when role is set also is not evidenced without explicit routing.",
+      "evidence": [
+        "frontend/src/components/AuthenticatedApp.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Introduced an `initializeUser(email,name,avatar)` backend API usage and automatic user initialization using Internet Identity principal-derived placeholder email/name and Dicebear avatar.",
+      "reason": "BuildRequest specifies `loginWithGoogle(googleToken)` and storing identity fields from that flow; it does not request an `initializeUser` endpoint or auto-generation of identity fields from principal for testing.",
+      "evidence": [
+        "frontend/src/components/AuthenticatedApp.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "description": "Implemented/continued Internet Identity-based login while labeling UI as \"Continue with Google\".",
+      "reason": "Requirement asks for an MVP Google-style flow with a backend `loginWithGoogle(googleToken)` method; diff shows `useInternetIdentity().login()` used directly with no googleToken flow evidenced.",
+      "evidence": [
+        "frontend/src/pages/LoginPage.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.72,
+  "changed_files": [
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/components/AuthenticatedApp.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/LoginPage.tsx",
+    "frontend/src/pages/ProfileSetupPage.tsx",
+    "frontend/src/pages/RoleSelectionPage.tsx",
+    "project_state.json"
+  ]
+}

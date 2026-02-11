@@ -1,0 +1,101 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "MVP identity login + immutable role selection routing (frontend-only)",
+  "requirements": [
+    {
+      "id": "REQ-15",
+      "summary": "Add an MVP Google-style identity login UX that authenticates the caller and initializes identity-only user fields without assigning any role during login.",
+      "acceptanceCriteria": [
+        "Frontend provides a single \"Continue with Google\" login action and no password/email-verification/OTP UI.",
+        "After login, the app can fetch the current user via backend and determine whether role selection is still required.",
+        "No role is assigned as part of the login action."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Change the public login UI to a single Google-style action labeled \"Continue with Google\" (English) while still using the existing Internet Identity login under the hood to satisfy platform constraints. Ensure there is no role selection and no extra auth UI. Use the authorization component's frontend authentication guidance patterns (Internet Identity + clearing cached data on logout). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add React Query hooks for the identity-only user flow: (1) fetching backend current-user state (getCurrentUser) and (2) initializing identity fields via backend initializeUser when needed. Implement MVP-friendly error handling (e.g., if getCurrentUser fails because the user is not initialized yet, initialize and refetch)."
+        },
+        {
+          "path": "frontend/src/components/AuthenticatedApp.tsx",
+          "operation": "modify",
+          "description": "Add an authenticated bootstrap step that ensures a backend current-user record exists (identity-only: email/name/avatar) by calling the new hooks (getCurrentUser and initializeUser) after Internet Identity login. Do not call setUserType here."
+        }
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "summary": "After login, route users based on backend getCurrentUser(): userType null → /select-role; player → Player onboarding; team → Team onboarding.",
+      "acceptanceCriteria": [
+        "LoginPage displays a Google-style login action (text in English).",
+        "After login completes, the app calls the backend to fetch the current user and routes according to userType.",
+        "No role is assigned as part of the login action."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AuthenticatedApp.tsx",
+          "operation": "modify",
+          "description": "Replace the current profile-first gating logic with backend current-user gating: after identity is ready, fetch getCurrentUser and route according to userType (null → /select-role, player → show Player onboarding if needed else player dashboard, team → show Team onboarding if needed else team dashboard). Ensure the routing source of truth is backend state (getCurrentUser via React Query cache)."
+        },
+        {
+          "path": "frontend/src/pages/ProfileSetupPage.tsx",
+          "operation": "modify",
+          "description": "Adjust this page so it no longer performs role selection locally. Instead, make it a role-specific onboarding wrapper (player/team) driven by backend current-user state; it should render the correct onboarding component (PlayerProfileSetup or TeamProfileSetup) when needed, without creating/setting a role in the frontend."
+        }
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "summary": "Create/adjust the dedicated /select-role route with exactly two permanent role choices (Player/Team) that call setUserType and then route to the corresponding onboarding flow.",
+      "acceptanceCriteria": [
+        "The role selection screen shows two prominent buttons: \"I am a Player\" and \"I represent a Team\" (English text).",
+        "The screen displays a warning in English: \"This choice cannot be changed later\" (or equivalent wording).",
+        "Choosing a role calls backend setUserType and on success redirects to the matching onboarding screen; on failure (already set) the UI shows an error and re-fetches current user state."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/RoleSelectionPage.tsx",
+          "operation": "modify",
+          "description": "Refactor the role selection UI to match the requirement exactly: show only the two role choices with button text \"I am a Player\" and \"I represent a Team\" plus a clear permanence warning (English). Remove any extra intermediate \"Continue\" step so role selection is a direct action. Wire the buttons to backend setUserType (via a new mutation hook), then redirect to the appropriate onboarding view; on error (e.g., already set), show an error message and re-fetch getCurrentUser to recover."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add a React Query mutation hook for backend setUserType, including success invalidation of the cached getCurrentUser query and robust error propagation so the role selection page can display a failure state and re-fetch current user."
+        },
+        {
+          "path": "frontend/src/components/AuthenticatedApp.tsx",
+          "operation": "modify",
+          "description": "Implement minimal client-side path handling so /select-role is a dedicated navigable route within the authenticated flow (e.g., via history state + popstate listener). Ensure /select-role renders the updated RoleSelectionPage component."
+        }
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "summary": "Add frontend routing guards to force /select-role when userType is null and prevent access to /select-role once userType is set, using backend state as the source of truth.",
+      "acceptanceCriteria": [
+        "Any attempt to navigate to authenticated pages while userType is null results in a redirect to /select-role.",
+        "A user with userType=player or userType=team cannot remain on /select-role and is redirected to the correct flow.",
+        "The routing logic uses backend state (getCurrentUser / cached query) as the source of truth."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AuthenticatedApp.tsx",
+          "operation": "modify",
+          "description": "Add route guards based on cached getCurrentUser: (1) if userType is null, force navigation to /select-role regardless of attempted authenticated view; (2) if userType is set, automatically redirect away from /select-role to the correct onboarding/dashboard flow. Ensure guards re-evaluate when getCurrentUser cache updates (e.g., after setUserType)."
+        },
+        {
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "Ensure that identity changes and logout flows fully clear cached getCurrentUser (and any other user-scoped queries) so guards do not apply stale role state after switching accounts, consistent with the authorization component's frontend guidance. Verify the component's usage instructions before implementing."
+        }
+      ]
+    }
+  ]
+}

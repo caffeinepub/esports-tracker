@@ -1,0 +1,156 @@
+{
+  "kind": "build_request",
+  "title": "MVP Google-style identity login + one-time immutable role selection with backend RBAC",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-15",
+      "text": "Implement an MVP-only Google-style identity login flow that results in a backend session for the caller and stores only identity fields (email, name, avatar) without assigning any role during login.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "I need to implement Google OAuth login for fast testing.",
+          "Google login is only for identity (email, name, avatar).",
+          "Google login authenticates the user but does NOT assign a role."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Frontend provides a single \"Continue with Google\" login action and no password/email-verification/OTP UI.",
+        "Backend exposes a `loginWithGoogle(googleToken)` method that creates/updates a backend user record containing email, name, avatar and leaves `userType` unset (null) on first login.",
+        "After login, the app can fetch the current user via backend and determine whether role selection is still required."
+      ]
+    },
+    {
+      "id": "REQ-16",
+      "text": "Add a backend User model (separate from Player/Team profile models) with fields `id`, `email`, `name`, `avatar`, and `userType` where `userType` is nullable (null | player | team), and store it per authenticated caller.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "User model with fields: id, email, name, avatar, userType (null | player | team)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend defines a User type that includes: id, email, name, avatar, userType (nullable).",
+        "Backend persists a mapping from the authenticated caller to the User record (MVP persistence consistent with existing in-memory state patterns in `backend/main.mo`).",
+        "`getCurrentUser()` returns the caller's User record (or null if never logged in via the Google identity flow)."
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "text": "Implement backend APIs `getCurrentUser()` and `setUserType(userType)` where `setUserType` can only be called once per user and fails if `userType` is already set.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "Functions: loginWithGoogle, getCurrentUser, setUserType",
+          "setUserType should fail if userType already exists",
+          "Role is stored in backend and cannot be changed later."
+        ]
+      },
+      "acceptanceCriteria": [
+        "`setUserType` traps/returns an error when called for a user whose `userType` is already player or team.",
+        "`setUserType` traps/returns an error when called with an invalid value (anything other than player/team).",
+        "After a successful `setUserType`, subsequent `getCurrentUser()` returns the new non-null `userType`."
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "text": "Enforce role-based access control in the backend so that player-only APIs reject team users and team-only APIs reject player users, using the stored immutable `userType` as the source of truth (not client-provided parameters).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "Player APIs must be accessible only to players, and team APIs only to teams.",
+          "All APIs must enforce role-based access (player APIs blocked for teams and vice-versa)."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Player-only endpoints (e.g., creating posts, viewing feed, searching all hiring requirements for players, updating readiness requirements) fail for users whose `userType` is team or null.",
+        "Team-only endpoints (e.g., creating hiring requirements, talent search) fail for users whose `userType` is player or null.",
+        "Any endpoint that requires an established role fails with a clear error when `userType` is null (role not chosen)."
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "text": "Update the frontend login page to use a Google-style login button and, after login, route users based on backend `getCurrentUser()` as follows: if `userType` is null redirect to `/select-role`; if player go to Player onboarding; if team go to Team onboarding.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "Google Login button",
+          "After login: if userType == null → show role selection screen if player → go to player onboarding if team → go to team onboarding"
+        ]
+      },
+      "acceptanceCriteria": [
+        "LoginPage displays a Google-style login action (text in English).",
+        "After login completes, the app calls the backend to fetch the current user and routes according to userType.",
+        "No role is assigned as part of the login action."
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "text": "Create/adjust a dedicated role-selection route `/select-role` that is mandatory when `userType` is null and includes exactly two role choices (Player / Team) and a clear warning that the choice is permanent; selecting a role calls `setUserType` and then routes to the appropriate onboarding flow.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "If role is not chosen, always redirect to a role-selection screen.",
+          "Role selection screen with two buttons: Player / Team and a warning that the choice is permanent"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The role selection screen shows two prominent buttons: \"I am a Player\" and \"I represent a Team\" (English text).",
+        "The screen displays a warning in English: \"This choice cannot be changed later\" (or equivalent wording).",
+        "Choosing a role calls backend `setUserType` and on success redirects to the matching onboarding screen; on failure (already set) the UI shows an error and re-fetches current user state."
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "text": "Add frontend routing guards so that authenticated users with `userType` unset (null) are always redirected to `/select-role`, and users with `userType` set are prevented from accessing `/select-role` (redirect to their correct onboarding/dashboard).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "If role is not chosen, always redirect to a role-selection screen."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Any attempt to navigate to authenticated pages while `userType` is null results in a redirect to `/select-role`.",
+        "A user with `userType=player` or `userType=team` cannot remain on `/select-role` and is redirected to the correct flow.",
+        "The routing logic uses backend state (getCurrentUser / cached query) as the source of truth."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor in `backend/main.mo` (single-actor architecture).",
+    "Do not modify files under `frontend/src/components/ui` or the immutable hook paths listed in SYSTEM_CONTEXT.",
+    "Use English for all user-facing text.",
+    "Keep the implementation MVP-only and simple (no password fields, no email verification, no phone OTP).",
+    "Platform limitation: third-party authentication providers are not supported beyond Internet Identity; if true Google OAuth token verification or server-side validation is not feasible, implement an MVP testing-compatible identity flow that still satisfies the required UX and backend role immutability."
+  ],
+  "nonGoals": [
+    "Production-grade Google OAuth hardening (token verification against Google, refresh tokens, revocation, account linking/merging).",
+    "Changing user role after selection (explicitly disallowed).",
+    "Adding new backend services, databases, or external auth SDKs beyond what is feasible within the platform constraints."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

@@ -1,0 +1,321 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "eSports Tracker: an Internet Computer (DFINITY) dApp for the eSports ecosystem with two distinct user modes: Players and Teams. Players create/edit profiles, post daily structured progress updates with optional clips, and build readiness/fit signals for hiring. Teams create/manage org profiles, post hiring requirements (with readiness/Fit gates), and use a Talent Finder to search/filter players. The app includes structured endorsements (credibility signals) and performance/deployment diagnostics UI. Authentication direction is shifting from Internet Identity to MVP-only Google OAuth identity with a one-time immutable role selection enforced by backend authorization.",
+  "existing_features": [
+    {
+      "id": "IF-1",
+      "title": "Internet Identity authentication (login/logout + persisted session)",
+      "synonyms": [
+        "Internet Identity login",
+        "II auth",
+        "AuthClient"
+      ],
+      "description": "Provides authentication via Internet Identity using @dfinity/auth-client. Restores stored sessions on reload, exposes login() and clear() (logout), and tracks login lifecycle status for UI.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-2",
+      "title": "Identity-scoped backend actor initialization with RBAC bootstrap secret",
+      "synonyms": [
+        "useActor",
+        "actor creation",
+        "_initializeAccessControlWithSecret"
+      ],
+      "description": "Creates an anonymous actor when unauthenticated and an identity-bound actor when authenticated. On authenticated creation, calls _initializeAccessControlWithSecret using a secret token read from the URL hash (caffeineAdminToken) to bootstrap roles.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-3",
+      "title": "Role-based access control (admin/user/guest) with admin token environment bootstrap",
+      "synonyms": [
+        "RBAC",
+        "AccessControl",
+        "admin assignment"
+      ],
+      "description": "Motoko access-control assigns roles and enforces permissions via hasPermission checks. First caller providing the correct secret (matching CAFFEINE_ADMIN_TOKEN) becomes admin; others become user. Includes admin role checks and role assignment endpoint.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-4",
+      "title": "Authenticated routing with profile gating (setup vs dashboards)",
+      "synonyms": [
+        "AuthenticatedApp",
+        "profile gating",
+        "lazy loaded dashboards"
+      ],
+      "description": "After login, fetches the caller profile; routes to role/profile setup when missing, otherwise routes to PlayerDashboard or TeamDashboard based on userType. Uses React.lazy + Suspense for code splitting and loading fallbacks.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-5",
+      "title": "Role selection onboarding (Player vs Team)",
+      "synonyms": [
+        "RoleSelectionPage",
+        "ProfileSetupPage"
+      ],
+      "description": "New users choose Player or Team mode before filling the corresponding setup form. Setup is skipped if a profile already exists.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-6",
+      "title": "Player profile creation and editing",
+      "synonyms": [
+        "UserProfile CRUD",
+        "createOrUpdateProfile",
+        "EditProfileDialog",
+        "PlayerProfileSetup"
+      ],
+      "description": "Players can create and update their profile (username, primary game, role/position, skill level, open-to-team, readiness requirement). Backend enforces username non-empty, readiness range 0–100, and prevents changing userType after creation.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-7",
+      "title": "Team profile creation and management",
+      "synonyms": [
+        "TeamProfile CRUD",
+        "createOrUpdateTeamProfile",
+        "TeamProfileSetup",
+        "TeamProfileView"
+      ],
+      "description": "Teams can create/update a recruiting profile (team name, games recruiting, description, requirements, contact info). Backend ensures team-only behavior and auto-creates a corresponding #team user profile record if missing.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-8",
+      "title": "Readiness metrics and readiness requirement management",
+      "synonyms": [
+        "Global Readiness Score",
+        "getReadinessMetrics",
+        "updateReadinessRequirement"
+      ],
+      "description": "Backend exposes readiness metrics and supports updating a player’s readiness requirement (0–100). Frontend displays readiness banners with progress bars and a modal explaining the score (currently static explanation).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-9",
+      "title": "Progress posts (create post, feed, and user timeline)",
+      "synonyms": [
+        "Feed",
+        "Timeline",
+        "createPost",
+        "getFeed",
+        "getUserTimeline"
+      ],
+      "description": "Players can create progress posts with improvement text; the app provides a global feed and per-user timelines. Posts are timestamped and displayed with author info and relative date formatting.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-10",
+      "title": "Gameplay clip upload and playback for posts",
+      "synonyms": [
+        "ExternalBlob upload",
+        "video clip",
+        "upload progress"
+      ],
+      "description": "Post creation supports optional gameplay video clips (validated as video/* and max 50MB). The frontend uploads using ExternalBlob.fromBytes() with progress callbacks; PostCard renders clips in an HTML5 video player via a direct URL.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-11",
+      "title": "Team hiring requirement posting and listing",
+      "synonyms": [
+        "HiringRequirementsView",
+        "createHiringRequirement",
+        "getTeamHiringRequirements"
+      ],
+      "description": "Teams can post hiring requirements specifying game, role, skill level, minimum readiness score, and requirement text. Teams can list their own hiring requirements; backend restricts creation to team users.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-12",
+      "title": "Player-side team search (search all hiring requirements)",
+      "synonyms": [
+        "TeamSearchView",
+        "searchAllHiringRequirementsForPlayers",
+        "Find Teams"
+      ],
+      "description": "Players can search for teams/hiring requirements using a prominent search bar plus filters (game, role, skill level, minimum readiness score). Includes clear-search and clear-all behaviors and loading/empty/result states.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-13",
+      "title": "Team-side talent finder (player discovery with filters and text search)",
+      "synonyms": [
+        "TalentFinder",
+        "searchTalent",
+        "team player search"
+      ],
+      "description": "Teams can search players using filters (game, role, level, minimum readiness score, open-to-team only, has-clip only) plus a text search query. UI includes clear actions, filter card, and consistent results header/empty/loading states.",
+      "reqIds": [
+        "REQ-13",
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-14",
+      "title": "Endorsement system (submit, delete, list, and summary)",
+      "synonyms": [
+        "Credibility signals",
+        "endorsements",
+        "getPlayerEndorsementSummary"
+      ],
+      "description": "Users can endorse players with predefined endorsement types or a custom text endorsement. Backend prevents self-endorsement and enforces one endorsement per endorser per player; supports deletion by the endorser. Frontend provides an endorsement dialog and renders aggregated endorsement counts on profiles and in talent cards.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-15",
+      "title": "Role-based dashboards and navigation (Player vs Team)",
+      "synonyms": [
+        "PlayerDashboard",
+        "TeamDashboard",
+        "Header/TeamHeader"
+      ],
+      "description": "Player dashboard supports Progress feed, Find Teams, and Profile views, with conditional feed fetching and a floating action button to create posts. Team dashboard supports Home, Profile, Hiring, and Talent sections, plus logout menus that clear identity and React Query cache.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-16",
+      "title": "Blob-storage operations mixin (gateway authorization, cashier refill, dead blob pruning)",
+      "synonyms": [
+        "MixinStorage",
+        "caffeine storage utilities",
+        "GC/prune"
+      ],
+      "description": "Backend includes maintenance endpoints to update authorized gateway principals, refill the storage cashier canister with cycles, list dead blobs for deletion, confirm deletion (and trigger GC), and return a simple upload certificate stub.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-17",
+      "title": "Deployment status UI via build-time metadata",
+      "synonyms": [
+        "DeploymentStatusCard",
+        "VITE_DEPLOYMENT_*"
+      ],
+      "description": "Reads build-time environment variables to display deployment success/failure/unknown state, timestamps, canister/frontend URLs, error messages, and log links on the login/loading surfaces without requiring backend changes.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-18",
+      "title": "Performance diagnostics markers and debug overlay",
+      "synonyms": [
+        "perfDiagnostics",
+        "PerfDebugOverlay",
+        "perf markers"
+      ],
+      "description": "Records app initialization/auth milestones using performance.now() and optionally displays elapsed times in a small overlay when the URL contains ?perf=1.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-mvp-only-google-style-identity-login-flow-that-results-in-a-backend-session-for-the-caller-and-stores-only-identity-fields-email-name-avatar-without-assigning-any-role-during-login",
+      "title": "Implement an MVP-only Google-style identity login flow that results in a backend session for the caller and stores only identity fields (email, name, avatar) without assigning any role during login.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-login-page-to-use-a-google-style-login-button-and-after-login-route-users-based-on-backend-getcurrentuser-as-follows-if-usertype-is-null-redirect-to-select-role-if-player-go-to-player-onboarding-if-team-go-to-team-onboarding",
+      "title": "Update the frontend login page to use a Google-style login button and, after login, route users based on backend `getCurrentUser()` as follows: if `userType` is null redirect to `/select-role`; if player go to Player onboarding; if team go to Team onboarding.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-adjust-a-dedicated-role-selection-route-select-role-that-is-mandatory-when-usertype-is-null-and-includes-exactly-two-role-choices-player-team-and-a-clear-warning-that-the-choice-is-permanent-selecting-a-role-calls-setusertype-and-then-routes-to-the-appropriate-onboarding-flow",
+      "title": "Create/adjust a dedicated role-selection route `/select-role` that is mandatory when `userType` is null and includes exactly two role choices (Player / Team) and a clear warning that the choice is permanent; selecting a role calls `setUserType` and then routes to the appropriate onboarding flow.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-frontend-routing-guards-so-that-authenticated-users-with-usertype-unset-null-are-always-redirected-to-select-role-and-users-with-usertype-set-are-prevented-from-accessing-select-role-redirect-to-their-correct-onboarding-dashboard",
+      "title": "Add frontend routing guards so that authenticated users with `userType` unset (null) are always redirected to `/select-role`, and users with `userType` set are prevented from accessing `/select-role` (redirect to their correct onboarding/dashboard).",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Implement MVP-only Google OAuth login (identity only) + mandatory one-time immutable role selection (player/team) with backend-enforced role-based API authorization and frontend routing guards.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Add a backend User model (separate from Player/Team profile models) with fields `id`, `email`, `name`, `avatar`, and `userType` where `userType` is nullable (null | player | team), and store it per authenticated caller.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Implement backend APIs `getCurrentUser()` and `setUserType(userType)` where `setUserType` can only be called once per user and fails if `userType` is already set.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Enforce role-based access control in the backend so that player-only APIs reject team users and team-only APIs reject player users, using the stored immutable `userType` as the source of truth (not client-provided parameters).",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "status": "pending"
+    }
+  ],
+  "architectural_notes": [
+    "Frontend is React + TypeScript (Vite) using @tanstack/react-query for all backend queries/mutations with cache invalidation on mutation success.",
+    "Backend is a single Motoko canister actor (backend/main.mo) composed with mixins for authorization (MixinAuthorization) and blob-storage utilities (MixinStorage).",
+    "Role-based access control (admin/user/guest) is bootstrapped via a secret token compared against the CAFFEINE_ADMIN_TOKEN environment variable.",
+    "Frontend actor creation is identity-scoped via a dedicated useActor hook; authenticated actor initialization calls _initializeAccessControlWithSecret using a URL-hash secret (caffeineAdminToken).",
+    "Domain modeling uses Motoko variant types (Game/Role/Level/UserType) mirrored to the frontend via generated candid bindings.",
+    "ExternalBlob is used for video clip uploads; frontend constructs ExternalBlob from bytes and tracks upload progress; UI plays clips via direct URL.",
+    "Search experiences are server-side filtered (talent search; hiring requirement search) with memoized filter objects and stable serialized query keys to reduce refetch churn (staleTime/gcTime tuned).",
+    "UI is built with Tailwind CSS + shadcn-style component primitives and lucide-react icons; dashboards use tab/view state rather than URL routing.",
+    "Deployment observability is surfaced purely via build-time environment variables (VITE_DEPLOYMENT_*) rendered in a DeploymentStatusCard.",
+    "A production-safe performance marker utility (perfDiagnostics) records app milestones and can be viewed via a ?perf=1 overlay."
+  ],
+  "known_issues": [
+    "Backend state is in-memory Maps/vars (no stable persistence shown), so canister upgrades/reinstalls would wipe profiles, posts, hiring requirements, and endorsements.",
+    "Blob-storage cashier env var key is spelled CAFFFEINE_STORAGE_CASHIER_PRINCIPAL (extra 'F'); misconfiguration will trap at runtime.",
+    "SystemHiringRequirement snapshots teamName/contactInfo at hiring-post creation time and is not updated if the team edits its profile later.",
+    "searchAllHiringRequirementsForPlayers returns filtered results without explicit sorting (order may be unstable/unexpected).",
+    "useActor invalidates and also refetches nearly all queries on actor change, which can cause refetch storms and slow initial loads on auth transitions.",
+    "TalentFinder renders endorsement badges by calling useGetPlayerEndorsementSummary per player card (potential N+1 query/performance issue on large result sets).",
+    "TalentFinder 'View Profile' button is present but does not navigate (no routing/action implemented in the component).",
+    "ReadinessBreakdownModal shows static placeholder breakdown values rather than a backend-derived computation.",
+    "frontend/src/pages/HomePage.tsx is empty/unimplemented.",
+    "Two different CSS entrypoints exist (frontend/index.css and frontend/src/index.css), which can cause confusion about the active design tokens/theme source."
+  ],
+  "isFixRequest": false,
+  "gameProjectType": "none",
+  "projectName": "eSports Tracker",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

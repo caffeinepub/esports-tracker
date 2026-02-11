@@ -1,0 +1,112 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-04T19:57:48.413Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 7,
+    "implemented": 4,
+    "items": [
+      {
+        "id": "REQ-15",
+        "summary": "Implement an MVP-only Google-style identity login flow that results in a backend session for the caller and stores only identity fields (email, name, avatar) without assigning any role during login.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/LoginPage.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/AuthenticatedApp.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/LoginPage.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/AuthenticatedApp.tsx"
+        ]
+      },
+      {
+        "id": "REQ-16",
+        "summary": "Add a backend User model (separate from Player/Team profile models) with fields `id`, `email`, `name`, `avatar`, and `userType` where `userType` is nullable (null | player | team), and store it per authenticated caller.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-17",
+        "summary": "Implement backend APIs `getCurrentUser()` and `setUserType(userType)` where `setUserType` can only be called once per user and fails if `userType` is already set.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-18",
+        "summary": "Enforce role-based access control in the backend so that player-only APIs reject team users and team-only APIs reject player users, using the stored immutable `userType` as the source of truth (not client-provided parameters).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-19",
+        "summary": "Update the frontend login page to use a Google-style login button and, after login, route users based on backend `getCurrentUser()` as follows: if `userType` is null redirect to `/select-role`; if player go to Player onboarding; if team go to Team onboarding.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/AuthenticatedApp.tsx",
+          "frontend/src/pages/ProfileSetupPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AuthenticatedApp.tsx",
+          "frontend/src/pages/ProfileSetupPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-20",
+        "summary": "Create/adjust a dedicated role-selection route `/select-role` that is mandatory when `userType` is null and includes exactly two role choices (Player / Team) and a clear warning that the choice is permanent; selecting a role calls `setUserType` and then routes to the appropriate onboarding flow.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/RoleSelectionPage.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/AuthenticatedApp.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/RoleSelectionPage.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/AuthenticatedApp.tsx"
+        ]
+      },
+      {
+        "id": "REQ-21",
+        "summary": "Add frontend routing guards so that authenticated users with `userType` unset (null) are always redirected to `/select-role`, and users with `userType` set are prevented from accessing `/select-role` (redirect to their correct onboarding/dashboard).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/AuthenticatedApp.tsx",
+          "frontend/src/hooks/useActor.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AuthenticatedApp.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "build-request.json",
+    "caffeine.lock.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/AuthenticatedApp.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/LoginPage.tsx",
+    "frontend/src/pages/ProfileSetupPage.tsx",
+    "frontend/src/pages/RoleSelectionPage.tsx",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}
