@@ -56,6 +56,21 @@ export interface SystemHiringRequirementSearchFilters {
     skillLevel?: Level;
     searchQuery?: string;
 }
+export interface Feedback {
+    id: bigint;
+    userId: Principal;
+    message: string;
+    timestamp: bigint;
+}
+export interface TalentSearchFilters {
+    hasClipOnly: boolean;
+    game?: Game;
+    role?: Role;
+    minReadinessScore?: bigint;
+    level?: Level;
+    openToTeamOnly: boolean;
+    searchQuery?: string;
+}
 export type EndorsementType = {
     __kind__: "custom";
     custom: string;
@@ -72,22 +87,6 @@ export type EndorsementType = {
     __kind__: "reliableComms";
     reliableComms: null;
 };
-export interface TalentSearchFilters {
-    hasClipOnly: boolean;
-    game?: Game;
-    role?: Role;
-    minReadinessScore?: bigint;
-    level?: Level;
-    openToTeamOnly: boolean;
-    searchQuery?: string;
-}
-export interface Endorsement {
-    id: bigint;
-    playerId: Principal;
-    createdAt: bigint;
-    endorsementType: EndorsementType;
-    endorserId: Principal;
-}
 export type Role = {
     __kind__: "attacker";
     attacker: null;
@@ -104,6 +103,13 @@ export type Role = {
     __kind__: "sniper";
     sniper: null;
 };
+export interface Endorsement {
+    id: bigint;
+    playerId: Principal;
+    createdAt: bigint;
+    endorsementType: EndorsementType;
+    endorserId: Principal;
+}
 export interface TeamProfile {
     id: Principal;
     userType: UserType;
@@ -175,6 +181,7 @@ export interface backendInterface {
     createPost(improvementText: string, clip: ExternalBlob | null): Promise<void>;
     deleteEndorsement(endorsementId: bigint): Promise<EndorsementSummary>;
     getAllEndorsements(): Promise<Array<Endorsement>>;
+    getAllFeedback(): Promise<Array<Feedback>>;
     getAllHiringRequirements(): Promise<Array<HiringRequirement>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -194,5 +201,6 @@ export interface backendInterface {
     searchTalent(filters: TalentSearchFilters): Promise<Array<UserProfile>>;
     setUserType(userType: UserType): Promise<void>;
     submitEndorsement(playerId: Principal, endorsementType: EndorsementType): Promise<EndorsementSummary>;
+    submitFeedback(message: string): Promise<void>;
     updateReadinessRequirement(requirement: bigint): Promise<void>;
 }

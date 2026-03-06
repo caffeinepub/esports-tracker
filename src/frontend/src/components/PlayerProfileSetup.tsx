@@ -1,23 +1,35 @@
-import { useState } from 'react';
-import { useCreateOrUpdateProfile } from '../hooks/useQueries';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Switch } from './ui/switch';
-import { Slider } from './ui/slider';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { toast } from 'sonner';
-import { UserType } from '../backend';
-import type { Game, Role, Level } from '../backend';
+import { useState } from "react";
+import { toast } from "sonner";
+import { UserType } from "../backend";
+import type { Game, Level, Role } from "../backend";
+import { useCreateOrUpdateProfile } from "../hooks/useQueries";
+import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Slider } from "./ui/slider";
+import { Switch } from "./ui/switch";
 
 export default function PlayerProfileSetup() {
-  const [username, setUsername] = useState('');
-  const [game, setGame] = useState<string>('');
-  const [customGame, setCustomGame] = useState('');
-  const [role, setRole] = useState<string>('');
-  const [customRole, setCustomRole] = useState('');
-  const [level, setLevel] = useState<Level>('casual' as Level);
+  const [username, setUsername] = useState("");
+  const [game, setGame] = useState<string>("");
+  const [customGame, setCustomGame] = useState("");
+  const [role, setRole] = useState<string>("");
+  const [customRole, setCustomRole] = useState("");
+  const [level, setLevel] = useState<Level>("casual" as Level);
   const [openToTeam, setOpenToTeam] = useState(false);
   const [readinessRequirement, setReadinessRequirement] = useState<number>(50);
 
@@ -27,52 +39,52 @@ export default function PlayerProfileSetup() {
     e.preventDefault();
 
     if (!username.trim()) {
-      toast.error('Please enter your username');
+      toast.error("Please enter your username");
       return;
     }
 
     if (!game) {
-      toast.error('Please select your game');
+      toast.error("Please select your game");
       return;
     }
 
     if (!role) {
-      toast.error('Please select your role');
+      toast.error("Please select your role");
       return;
     }
 
     // Build Game type
     let gameType: Game;
-    if (game === 'bgmi') {
-      gameType = { __kind__: 'bgmi', bgmi: null };
-    } else if (game === 'freeFire') {
-      gameType = { __kind__: 'freeFire', freeFire: null };
-    } else if (game === 'codm') {
-      gameType = { __kind__: 'codm', codm: null };
+    if (game === "bgmi") {
+      gameType = { __kind__: "bgmi", bgmi: null };
+    } else if (game === "freeFire") {
+      gameType = { __kind__: "freeFire", freeFire: null };
+    } else if (game === "codm") {
+      gameType = { __kind__: "codm", codm: null };
     } else {
       if (!customGame.trim()) {
-        toast.error('Please enter your game name');
+        toast.error("Please enter your game name");
         return;
       }
-      gameType = { __kind__: 'other', other: customGame };
+      gameType = { __kind__: "other", other: customGame };
     }
 
     // Build Role type
     let roleType: Role;
-    if (role === 'attacker') {
-      roleType = { __kind__: 'attacker', attacker: null };
-    } else if (role === 'support') {
-      roleType = { __kind__: 'support', support: null };
-    } else if (role === 'sniper') {
-      roleType = { __kind__: 'sniper', sniper: null };
-    } else if (role === 'tank') {
-      roleType = { __kind__: 'tank', tank: null };
+    if (role === "attacker") {
+      roleType = { __kind__: "attacker", attacker: null };
+    } else if (role === "support") {
+      roleType = { __kind__: "support", support: null };
+    } else if (role === "sniper") {
+      roleType = { __kind__: "sniper", sniper: null };
+    } else if (role === "tank") {
+      roleType = { __kind__: "tank", tank: null };
     } else {
       if (!customRole.trim()) {
-        toast.error('Please enter your role');
+        toast.error("Please enter your role");
         return;
       }
-      roleType = { __kind__: 'other', other: customRole };
+      roleType = { __kind__: "other", other: customRole };
     }
 
     try {
@@ -85,9 +97,9 @@ export default function PlayerProfileSetup() {
         readinessRequirement: BigInt(readinessRequirement),
         username: username.trim(),
       });
-      toast.success('Profile created successfully!');
+      toast.success("Profile created successfully!");
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create profile');
+      toast.error(error.message || "Failed to create profile");
     }
   };
 
@@ -95,12 +107,14 @@ export default function PlayerProfileSetup() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
       <Card className="w-full max-w-lg border-border">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-2xl font-bold">Create Your Player Profile</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            Create Your Player Profile
+          </CardTitle>
           <CardDescription className="text-muted-foreground">
             Set up your professional eSports profile
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Username */}
@@ -133,7 +147,7 @@ export default function PlayerProfileSetup() {
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
-              {game === 'other' && (
+              {game === "other" && (
                 <Input
                   placeholder="Enter game name"
                   value={customGame}
@@ -160,7 +174,7 @@ export default function PlayerProfileSetup() {
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
-              {role === 'other' && (
+              {role === "other" && (
                 <Input
                   placeholder="Enter your role"
                   value={customRole}
@@ -175,7 +189,10 @@ export default function PlayerProfileSetup() {
               <Label htmlFor="level" className="text-sm font-medium">
                 Skill Level
               </Label>
-              <Select value={level} onValueChange={(val) => setLevel(val as Level)}>
+              <Select
+                value={level}
+                onValueChange={(val) => setLevel(val as Level)}
+              >
                 <SelectTrigger id="level" className="h-10">
                   <SelectValue />
                 </SelectTrigger>
@@ -241,7 +258,7 @@ export default function PlayerProfileSetup() {
                   Creating Profile...
                 </>
               ) : (
-                'Create Profile'
+                "Create Profile"
               )}
             </Button>
           </form>

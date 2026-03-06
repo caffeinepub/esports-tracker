@@ -1,18 +1,29 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { Card, CardContent } from './ui/card';
-import { TrendingUp, Upload, Clock } from 'lucide-react';
+import { Clock, TrendingUp, Upload } from "lucide-react";
+import { Card, CardContent } from "./ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 
 interface ReadinessBreakdownModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function ReadinessBreakdownModal({ open, onOpenChange }: ReadinessBreakdownModalProps) {
+export default function ReadinessBreakdownModal({
+  open,
+  onOpenChange,
+}: ReadinessBreakdownModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Readiness Score Breakdown</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            Readiness Score Breakdown
+          </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             How your global readiness score is calculated
           </DialogDescription>
@@ -28,7 +39,9 @@ export default function ReadinessBreakdownModal({ open, onOpenChange }: Readines
                   </div>
                   <div>
                     <p className="text-sm font-medium">Consistency</p>
-                    <p className="text-xs text-muted-foreground">Regular posting activity</p>
+                    <p className="text-xs text-muted-foreground">
+                      Regular posting activity
+                    </p>
                   </div>
                 </div>
                 <span className="text-lg font-bold text-primary">+20</span>
@@ -45,7 +58,9 @@ export default function ReadinessBreakdownModal({ open, onOpenChange }: Readines
                   </div>
                   <div>
                     <p className="text-sm font-medium">Proof uploads</p>
-                    <p className="text-xs text-muted-foreground">Gameplay clips shared</p>
+                    <p className="text-xs text-muted-foreground">
+                      Gameplay clips shared
+                    </p>
                   </div>
                 </div>
                 <span className="text-lg font-bold text-primary">+15</span>
@@ -62,7 +77,9 @@ export default function ReadinessBreakdownModal({ open, onOpenChange }: Readines
                   </div>
                   <div>
                     <p className="text-sm font-medium">Recent activity</p>
-                    <p className="text-xs text-muted-foreground">Last 7 days engagement</p>
+                    <p className="text-xs text-muted-foreground">
+                      Last 7 days engagement
+                    </p>
                   </div>
                 </div>
                 <span className="text-lg font-bold text-primary">+15</span>

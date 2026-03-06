@@ -1,15 +1,27 @@
-import { useState, useEffect } from 'react';
-import { useCreateOrUpdateProfile } from '../hooks/useQueries';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Switch } from './ui/switch';
-import { Slider } from './ui/slider';
-import { Save } from 'lucide-react';
-import { toast } from 'sonner';
-import type { UserProfile, Game, Role, Level } from '../backend';
+import { Save } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import type { Game, Level, Role, UserProfile } from "../backend";
+import { useCreateOrUpdateProfile } from "../hooks/useQueries";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Slider } from "./ui/slider";
+import { Switch } from "./ui/switch";
 
 interface EditProfileDialogProps {
   open: boolean;
@@ -17,15 +29,21 @@ interface EditProfileDialogProps {
   profile: UserProfile;
 }
 
-export default function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDialogProps) {
+export default function EditProfileDialog({
+  open,
+  onOpenChange,
+  profile,
+}: EditProfileDialogProps) {
   const [username, setUsername] = useState(profile.username);
-  const [game, setGame] = useState<string>('');
-  const [customGame, setCustomGame] = useState('');
-  const [role, setRole] = useState<string>('');
-  const [customRole, setCustomRole] = useState('');
+  const [game, setGame] = useState<string>("");
+  const [customGame, setCustomGame] = useState("");
+  const [role, setRole] = useState<string>("");
+  const [customRole, setCustomRole] = useState("");
   const [level, setLevel] = useState<Level>(profile.level);
   const [openToTeam, setOpenToTeam] = useState(profile.openToTeam);
-  const [readinessRequirement, setReadinessRequirement] = useState<number>(Number(profile.readinessRequirement));
+  const [readinessRequirement, setReadinessRequirement] = useState<number>(
+    Number(profile.readinessRequirement),
+  );
 
   const updateProfile = useCreateOrUpdateProfile();
 
@@ -37,21 +55,21 @@ export default function EditProfileDialog({ open, onOpenChange, profile }: EditP
       setReadinessRequirement(Number(profile.readinessRequirement));
 
       // Set game
-      if (profile.game.__kind__ === 'bgmi') setGame('bgmi');
-      else if (profile.game.__kind__ === 'freeFire') setGame('freeFire');
-      else if (profile.game.__kind__ === 'codm') setGame('codm');
+      if (profile.game.__kind__ === "bgmi") setGame("bgmi");
+      else if (profile.game.__kind__ === "freeFire") setGame("freeFire");
+      else if (profile.game.__kind__ === "codm") setGame("codm");
       else {
-        setGame('other');
+        setGame("other");
         setCustomGame(profile.game.other);
       }
 
       // Set role
-      if (profile.role.__kind__ === 'attacker') setRole('attacker');
-      else if (profile.role.__kind__ === 'support') setRole('support');
-      else if (profile.role.__kind__ === 'sniper') setRole('sniper');
-      else if (profile.role.__kind__ === 'tank') setRole('tank');
+      if (profile.role.__kind__ === "attacker") setRole("attacker");
+      else if (profile.role.__kind__ === "support") setRole("support");
+      else if (profile.role.__kind__ === "sniper") setRole("sniper");
+      else if (profile.role.__kind__ === "tank") setRole("tank");
       else {
-        setRole('other');
+        setRole("other");
         setCustomRole(profile.role.other);
       }
     }
@@ -61,42 +79,42 @@ export default function EditProfileDialog({ open, onOpenChange, profile }: EditP
     e.preventDefault();
 
     if (!username.trim()) {
-      toast.error('Please enter your username');
+      toast.error("Please enter your username");
       return;
     }
 
     // Build Game type
     let gameType: Game;
-    if (game === 'bgmi') {
-      gameType = { __kind__: 'bgmi', bgmi: null };
-    } else if (game === 'freeFire') {
-      gameType = { __kind__: 'freeFire', freeFire: null };
-    } else if (game === 'codm') {
-      gameType = { __kind__: 'codm', codm: null };
+    if (game === "bgmi") {
+      gameType = { __kind__: "bgmi", bgmi: null };
+    } else if (game === "freeFire") {
+      gameType = { __kind__: "freeFire", freeFire: null };
+    } else if (game === "codm") {
+      gameType = { __kind__: "codm", codm: null };
     } else {
       if (!customGame.trim()) {
-        toast.error('Please enter your game name');
+        toast.error("Please enter your game name");
         return;
       }
-      gameType = { __kind__: 'other', other: customGame };
+      gameType = { __kind__: "other", other: customGame };
     }
 
     // Build Role type
     let roleType: Role;
-    if (role === 'attacker') {
-      roleType = { __kind__: 'attacker', attacker: null };
-    } else if (role === 'support') {
-      roleType = { __kind__: 'support', support: null };
-    } else if (role === 'sniper') {
-      roleType = { __kind__: 'sniper', sniper: null };
-    } else if (role === 'tank') {
-      roleType = { __kind__: 'tank', tank: null };
+    if (role === "attacker") {
+      roleType = { __kind__: "attacker", attacker: null };
+    } else if (role === "support") {
+      roleType = { __kind__: "support", support: null };
+    } else if (role === "sniper") {
+      roleType = { __kind__: "sniper", sniper: null };
+    } else if (role === "tank") {
+      roleType = { __kind__: "tank", tank: null };
     } else {
       if (!customRole.trim()) {
-        toast.error('Please enter your role');
+        toast.error("Please enter your role");
         return;
       }
-      roleType = { __kind__: 'other', other: customRole };
+      roleType = { __kind__: "other", other: customRole };
     }
 
     try {
@@ -109,10 +127,10 @@ export default function EditProfileDialog({ open, onOpenChange, profile }: EditP
         readinessRequirement: BigInt(readinessRequirement),
         username: username.trim(),
       });
-      toast.success('Profile updated successfully!');
+      toast.success("Profile updated successfully!");
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update profile');
+      toast.error(error.message || "Failed to update profile");
     }
   };
 
@@ -129,7 +147,9 @@ export default function EditProfileDialog({ open, onOpenChange, profile }: EditP
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Username */}
           <div className="space-y-2">
-            <Label htmlFor="edit-username" className="text-sm font-medium">Username</Label>
+            <Label htmlFor="edit-username" className="text-sm font-medium">
+              Username
+            </Label>
             <Input
               id="edit-username"
               value={username}
@@ -140,7 +160,9 @@ export default function EditProfileDialog({ open, onOpenChange, profile }: EditP
 
           {/* Game */}
           <div className="space-y-2">
-            <Label htmlFor="edit-game" className="text-sm font-medium">Primary Game</Label>
+            <Label htmlFor="edit-game" className="text-sm font-medium">
+              Primary Game
+            </Label>
             <Select value={game} onValueChange={setGame}>
               <SelectTrigger id="edit-game" className="h-10">
                 <SelectValue />
@@ -152,7 +174,7 @@ export default function EditProfileDialog({ open, onOpenChange, profile }: EditP
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
-            {game === 'other' && (
+            {game === "other" && (
               <Input
                 placeholder="Enter game name"
                 value={customGame}
@@ -164,7 +186,9 @@ export default function EditProfileDialog({ open, onOpenChange, profile }: EditP
 
           {/* Role */}
           <div className="space-y-2">
-            <Label htmlFor="edit-role" className="text-sm font-medium">Role/Position</Label>
+            <Label htmlFor="edit-role" className="text-sm font-medium">
+              Role/Position
+            </Label>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger id="edit-role" className="h-10">
                 <SelectValue />
@@ -177,7 +201,7 @@ export default function EditProfileDialog({ open, onOpenChange, profile }: EditP
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
-            {role === 'other' && (
+            {role === "other" && (
               <Input
                 placeholder="Enter your role"
                 value={customRole}
@@ -189,8 +213,13 @@ export default function EditProfileDialog({ open, onOpenChange, profile }: EditP
 
           {/* Level */}
           <div className="space-y-2">
-            <Label htmlFor="edit-level" className="text-sm font-medium">Skill Level</Label>
-            <Select value={level} onValueChange={(val) => setLevel(val as Level)}>
+            <Label htmlFor="edit-level" className="text-sm font-medium">
+              Skill Level
+            </Label>
+            <Select
+              value={level}
+              onValueChange={(val) => setLevel(val as Level)}
+            >
               <SelectTrigger id="edit-level" className="h-10">
                 <SelectValue />
               </SelectTrigger>

@@ -66,6 +66,12 @@ export const Endorsement = IDL.Record({
   'endorsementType' : EndorsementType,
   'endorserId' : IDL.Principal,
 });
+export const Feedback = IDL.Record({
+  'id' : IDL.Nat,
+  'userId' : IDL.Principal,
+  'message' : IDL.Text,
+  'timestamp' : IDL.Int,
+});
 export const HiringRequirement = IDL.Record({
   'id' : IDL.Nat,
   'game' : Game,
@@ -191,6 +197,7 @@ export const idlService = IDL.Service({
   'createPost' : IDL.Func([IDL.Text, IDL.Opt(ExternalBlob)], [], []),
   'deleteEndorsement' : IDL.Func([IDL.Nat], [EndorsementSummary], []),
   'getAllEndorsements' : IDL.Func([], [IDL.Vec(Endorsement)], ['query']),
+  'getAllFeedback' : IDL.Func([], [IDL.Vec(Feedback)], ['query']),
   'getAllHiringRequirements' : IDL.Func(
       [],
       [IDL.Vec(HiringRequirement)],
@@ -250,6 +257,7 @@ export const idlService = IDL.Service({
       [EndorsementSummary],
       [],
     ),
+  'submitFeedback' : IDL.Func([IDL.Text], [], []),
   'updateReadinessRequirement' : IDL.Func([IDL.Int], [], []),
 });
 
@@ -313,6 +321,12 @@ export const idlFactory = ({ IDL }) => {
     'createdAt' : IDL.Int,
     'endorsementType' : EndorsementType,
     'endorserId' : IDL.Principal,
+  });
+  const Feedback = IDL.Record({
+    'id' : IDL.Nat,
+    'userId' : IDL.Principal,
+    'message' : IDL.Text,
+    'timestamp' : IDL.Int,
   });
   const HiringRequirement = IDL.Record({
     'id' : IDL.Nat,
@@ -439,6 +453,7 @@ export const idlFactory = ({ IDL }) => {
     'createPost' : IDL.Func([IDL.Text, IDL.Opt(ExternalBlob)], [], []),
     'deleteEndorsement' : IDL.Func([IDL.Nat], [EndorsementSummary], []),
     'getAllEndorsements' : IDL.Func([], [IDL.Vec(Endorsement)], ['query']),
+    'getAllFeedback' : IDL.Func([], [IDL.Vec(Feedback)], ['query']),
     'getAllHiringRequirements' : IDL.Func(
         [],
         [IDL.Vec(HiringRequirement)],
@@ -498,6 +513,7 @@ export const idlFactory = ({ IDL }) => {
         [EndorsementSummary],
         [],
       ),
+    'submitFeedback' : IDL.Func([IDL.Text], [], []),
     'updateReadinessRequirement' : IDL.Func([IDL.Int], [], []),
   });
 };

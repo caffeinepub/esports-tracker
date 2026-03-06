@@ -3,68 +3,68 @@
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --radius: 0.5rem;
-        /* Professional dark mode palette - LinkedIn-like */
-        --background: 0.05 0 0; /* #0D0D0D - Deep charcoal */
-        --foreground: 0.96 0 0; /* #F5F5F5 - Near white */
-        --card: 0.10 0 0; /* #1A1A1A - Slightly lighter dark gray */
-        --card-foreground: 0.96 0 0;
-        --popover: 0.10 0 0;
-        --popover-foreground: 0.96 0 0;
-        /* Blue accent - professional highlight */
-        --primary: 0.58 0.20 250; /* #2A78FF - Professional blue */
-        --primary-foreground: 0.96 0 0;
-        --secondary: 0.15 0 0;
-        --secondary-foreground: 0.96 0 0;
-        --muted: 0.15 0 0;
-        --muted-foreground: 0.67 0 0; /* #AAAAAA - Muted gray */
-        --accent: 0.58 0.20 250; /* Same as primary for consistency */
-        --accent-foreground: 0.96 0 0;
-        --destructive: 0.58 0.24 25;
-        --destructive-foreground: 0.96 0 0;
-        --border: 0.20 0 0;
-        --input: 0.15 0 0;
-        --ring: 0.58 0.20 250;
-        /* Meta info color */
-        --meta: 0.40 0 0; /* #666666 - Low-contrast gray */
-    }
+  :root {
+    --radius: 0.5rem;
+    /* Professional dark mode palette - LinkedIn-like */
+    --background: 0.05 0 0; /* #0D0D0D - Deep charcoal */
+    --foreground: 0.96 0 0; /* #F5F5F5 - Near white */
+    --card: 0.1 0 0; /* #1A1A1A - Slightly lighter dark gray */
+    --card-foreground: 0.96 0 0;
+    --popover: 0.1 0 0;
+    --popover-foreground: 0.96 0 0;
+    /* Blue accent - professional highlight */
+    --primary: 0.58 0.2 250; /* #2A78FF - Professional blue */
+    --primary-foreground: 0.96 0 0;
+    --secondary: 0.15 0 0;
+    --secondary-foreground: 0.96 0 0;
+    --muted: 0.15 0 0;
+    --muted-foreground: 0.67 0 0; /* #AAAAAA - Muted gray */
+    --accent: 0.58 0.2 250; /* Same as primary for consistency */
+    --accent-foreground: 0.96 0 0;
+    --destructive: 0.58 0.24 25;
+    --destructive-foreground: 0.96 0 0;
+    --border: 0.2 0 0;
+    --input: 0.15 0 0;
+    --ring: 0.58 0.2 250;
+    /* Meta info color */
+    --meta: 0.4 0 0; /* #666666 - Low-contrast gray */
+  }
 
-    * {
-        @apply border-border;
-    }
-    
-    body {
-        @apply bg-background text-foreground;
-        font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-    }
+  * {
+    @apply border-border;
+  }
 
-    /* Custom scrollbar for webkit browsers */
-    ::-webkit-scrollbar {
-        width: 8px;
-    }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+  }
 
-    ::-webkit-scrollbar-track {
-        @apply bg-background;
-    }
+  /* Custom scrollbar for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
 
-    ::-webkit-scrollbar-thumb {
-        background: oklch(0.30 0 0);
-        border-radius: 4px;
-    }
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
 
-    ::-webkit-scrollbar-thumb:hover {
-        background: oklch(0.40 0 0);
-    }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.3 0 0);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.4 0 0);
+  }
 }
 
 @layer utilities {
-    .text-balance {
-        text-wrap: balance;
-    }
-    
-    .text-meta {
-        color: oklch(var(--meta));
-    }
-}
+  .text-balance {
+    text-wrap: balance;
+  }
 
+  .text-meta {
+    color: oklch(var(--meta));
+  }
+}

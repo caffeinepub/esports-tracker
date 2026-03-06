@@ -1,17 +1,32 @@
-import { useState, useMemo } from 'react';
-import { useSearchTalent, useGetPlayerEndorsementSummary } from '../hooks/useQueries';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Slider } from './ui/slider';
-import { Switch } from './ui/switch';
-import { Skeleton } from './ui/skeleton';
-import { Badge } from './ui/badge';
-import { Search, X, CheckCircle2 } from 'lucide-react';
-import type { TalentSearchFilters, Game, Role, Level, UserProfile } from '../backend';
-import type { Principal } from '@dfinity/principal';
+import type { Principal } from "@dfinity/principal";
+import { CheckCircle2, Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import type {
+  Game,
+  Level,
+  Role,
+  TalentSearchFilters,
+  UserProfile,
+} from "../backend";
+import {
+  useGetPlayerEndorsementSummary,
+  useSearchTalent,
+} from "../hooks/useQueries";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Skeleton } from "./ui/skeleton";
+import { Slider } from "./ui/slider";
+import { Switch } from "./ui/switch";
 
 function PlayerEndorsementBadges({ playerId }: { playerId: Principal }) {
   const { data: endorsementSummary } = useGetPlayerEndorsementSummary(playerId);
@@ -19,26 +34,26 @@ function PlayerEndorsementBadges({ playerId }: { playerId: Principal }) {
   if (!endorsementSummary) return null;
 
   const badges: string[] = [];
-  
+
   if (Number(endorsementSummary.reliableCommsCount) > 0) {
-    badges.push('Reliable');
+    badges.push("Reliable");
   }
   if (Number(endorsementSummary.consistencyCount) > 0) {
-    badges.push('Consistent');
+    badges.push("Consistent");
   }
   if (Number(endorsementSummary.punctualCount) > 0) {
-    badges.push('Punctual');
+    badges.push("Punctual");
   }
   if (Number(endorsementSummary.scrimPartnerCount) > 0) {
-    badges.push('Scrim Partner');
+    badges.push("Scrim Partner");
   }
 
   if (badges.length === 0) return null;
 
   return (
     <div className="flex items-center gap-2 flex-wrap text-xs">
-      {badges.slice(0, 2).map((badge, index) => (
-        <span key={index} className="flex items-center gap-1 text-green-500">
+      {badges.slice(0, 2).map((badge) => (
+        <span key={badge} className="flex items-center gap-1 text-green-500">
           <CheckCircle2 className="w-3 h-3" />
           {badge}
         </span>
@@ -50,11 +65,15 @@ function PlayerEndorsementBadges({ playerId }: { playerId: Principal }) {
   );
 }
 
-export default function TalentFinder() {
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [game, setGame] = useState<string>('all');
-  const [role, setRole] = useState<string>('all');
-  const [level, setLevel] = useState<string>('all');
+interface TalentFinderProps {
+  onViewProfile?: (playerId: Principal) => void;
+}
+
+export default function TalentFinder({ onViewProfile }: TalentFinderProps) {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [game, setGame] = useState<string>("all");
+  const [role, setRole] = useState<string>("all");
+  const [level, setLevel] = useState<string>("all");
   const [minReadinessScore, setMinReadinessScore] = useState<number>(0);
   const [openToTeamOnly, setOpenToTeamOnly] = useState(false);
   const [hasClipOnly, setHasClipOnly] = useState(false);
@@ -62,22 +81,26 @@ export default function TalentFinder() {
   // Memoize filters to prevent unnecessary re-renders and query refetches
   const filters = useMemo((): TalentSearchFilters => {
     let gameFilter: Game | undefined;
-    if (game !== 'all') {
-      if (game === 'bgmi') gameFilter = { __kind__: 'bgmi', bgmi: null };
-      else if (game === 'freeFire') gameFilter = { __kind__: 'freeFire', freeFire: null };
-      else if (game === 'codm') gameFilter = { __kind__: 'codm', codm: null };
+    if (game !== "all") {
+      if (game === "bgmi") gameFilter = { __kind__: "bgmi", bgmi: null };
+      else if (game === "freeFire")
+        gameFilter = { __kind__: "freeFire", freeFire: null };
+      else if (game === "codm") gameFilter = { __kind__: "codm", codm: null };
     }
 
     let roleFilter: Role | undefined;
-    if (role !== 'all') {
-      if (role === 'attacker') roleFilter = { __kind__: 'attacker', attacker: null };
-      else if (role === 'support') roleFilter = { __kind__: 'support', support: null };
-      else if (role === 'sniper') roleFilter = { __kind__: 'sniper', sniper: null };
-      else if (role === 'tank') roleFilter = { __kind__: 'tank', tank: null };
+    if (role !== "all") {
+      if (role === "attacker")
+        roleFilter = { __kind__: "attacker", attacker: null };
+      else if (role === "support")
+        roleFilter = { __kind__: "support", support: null };
+      else if (role === "sniper")
+        roleFilter = { __kind__: "sniper", sniper: null };
+      else if (role === "tank") roleFilter = { __kind__: "tank", tank: null };
     }
 
     let levelFilter: Level | undefined;
-    if (level !== 'all') {
+    if (level !== "all") {
       levelFilter = level as Level;
     }
 
@@ -85,37 +108,60 @@ export default function TalentFinder() {
       game: gameFilter,
       role: roleFilter,
       level: levelFilter,
-      minReadinessScore: minReadinessScore > 0 ? BigInt(minReadinessScore) : undefined,
+      minReadinessScore:
+        minReadinessScore > 0 ? BigInt(minReadinessScore) : undefined,
       openToTeamOnly,
       hasClipOnly,
-      searchQuery: searchQuery.trim() !== '' ? searchQuery.trim() : undefined,
+      searchQuery: searchQuery.trim() !== "" ? searchQuery.trim() : undefined,
     };
-  }, [searchQuery, game, role, level, minReadinessScore, openToTeamOnly, hasClipOnly]);
+  }, [
+    searchQuery,
+    game,
+    role,
+    level,
+    minReadinessScore,
+    openToTeamOnly,
+    hasClipOnly,
+  ]);
 
   const { data: players, isLoading } = useSearchTalent(filters);
 
   const handleClearSearch = () => {
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   const handleClearAllFilters = () => {
-    setSearchQuery('');
-    setGame('all');
-    setRole('all');
-    setLevel('all');
+    setSearchQuery("");
+    setGame("all");
+    setRole("all");
+    setLevel("all");
     setMinReadinessScore(0);
     setOpenToTeamOnly(false);
     setHasClipOnly(false);
   };
 
-  const hasActiveFilters = game !== 'all' || role !== 'all' || level !== 'all' || minReadinessScore > 0 || openToTeamOnly || hasClipOnly;
+  const handleViewProfile = (playerId: Principal) => {
+    if (onViewProfile) {
+      onViewProfile(playerId);
+    }
+  };
+
+  const hasActiveFilters =
+    game !== "all" ||
+    role !== "all" ||
+    level !== "all" ||
+    minReadinessScore > 0 ||
+    openToTeamOnly ||
+    hasClipOnly;
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6 space-y-6">
       {/* Page Header */}
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Find Talent</h1>
-        <p className="text-muted-foreground">Search for skilled players to join your team</p>
+        <p className="text-muted-foreground">
+          Search for skilled players to join your team
+        </p>
       </div>
 
       {/* Search Bar */}
@@ -256,7 +302,9 @@ export default function TalentFinder() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">
-            {isLoading ? 'Searching...' : `${players?.length || 0} ${players?.length === 1 ? 'Player' : 'Players'} Found`}
+            {isLoading
+              ? "Searching..."
+              : `${players?.length || 0} ${players?.length === 1 ? "Player" : "Players"} Found`}
           </h2>
         </div>
 
@@ -274,25 +322,42 @@ export default function TalentFinder() {
           <Card>
             <CardContent className="py-12 text-center">
               <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-2">No players found matching your criteria</p>
-              <p className="text-sm text-meta">Try adjusting your filters or search terms</p>
+              <p className="text-muted-foreground mb-2">
+                No players found matching your criteria
+              </p>
+              <p className="text-sm text-meta">
+                Try adjusting your filters or search terms
+              </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {players?.map((player) => (
-              <Card key={player.id.toString()} className="hover:border-primary/50 transition-colors">
+              <Card
+                key={player.id.toString()}
+                className="hover:border-primary/50 transition-colors"
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-lg">{player.username}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {player.username}
+                      </CardTitle>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {player.game.__kind__ === 'other' ? player.game.other : player.game.__kind__.toUpperCase()} •{' '}
-                        {player.role.__kind__ === 'other' ? player.role.other : player.role.__kind__}
+                        {player.game.__kind__ === "other"
+                          ? player.game.other
+                          : player.game.__kind__.toUpperCase()}{" "}
+                        •{" "}
+                        {player.role.__kind__ === "other"
+                          ? player.role.other
+                          : player.role.__kind__}
                       </p>
                     </div>
                     {player.openToTeam && (
-                      <Badge variant="default" className="bg-primary/10 text-primary border-primary/20">
+                      <Badge
+                        variant="default"
+                        className="bg-primary/10 text-primary border-primary/20"
+                      >
                         Open to Team
                       </Badge>
                     )}
@@ -300,22 +365,31 @@ export default function TalentFinder() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Readiness Score</span>
+                    <span className="text-muted-foreground">
+                      Readiness Score
+                    </span>
                     <span className="text-lg font-bold text-primary">
                       {Number(player.globalReadinessScore)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Skill Level</span>
-                    <span className="font-medium capitalize">{player.level}</span>
+                    <span className="font-medium capitalize">
+                      {player.level}
+                    </span>
                   </div>
-                  
+
                   {/* Endorsement Summary Row */}
                   <div className="pt-2 border-t border-border">
                     <PlayerEndorsementBadges playerId={player.id} />
                   </div>
 
-                  <Button className="w-full mt-2 bg-primary hover:bg-primary/90 text-primary-foreground" variant="default" type="button">
+                  <Button
+                    className="w-full mt-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+                    variant="default"
+                    type="button"
+                    onClick={() => handleViewProfile(player.id)}
+                  >
                     View Profile
                   </Button>
                 </CardContent>

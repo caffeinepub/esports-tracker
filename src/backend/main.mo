@@ -160,10 +160,18 @@ actor {
     returnedFields : ?[Text];
   };
 
+  public type Feedback = {
+    id : Nat;
+    userId : Principal;
+    message : Text;
+    timestamp : Int;
+  };
+
   // State
   var nextPostId = 0;
   var nextHiringId = 0;
   var nextEndorsementId = 0;
+  var nextFeedbackId = 0;
 
   let userProfiles = Map.empty<Principal, UserProfile>();
   let teamProfiles = Map.empty<Principal, TeamProfile>();
@@ -172,6 +180,7 @@ actor {
   let systemHiringRequirements = Map.empty<Nat, SystemHiringRequirement>();
   let endorsements = Map.empty<Nat, Endorsement>();
   let users = Map.empty<Principal, User>();
+  let feedback = Map.empty<Nat, Feedback>();
 
   module Post {
     public func compare(p1 : Post, p2 : Post) : Order.Order {
@@ -201,6 +210,12 @@ actor {
     };
     public func compare(c1 : CustomEndorsement, c2 : CustomEndorsement) : Order.Order {
       Text.compare(c1.name, c2.name);
+    };
+  };
+
+  module Feedback {
+    public func compare(f1 : Feedback, f2 : Feedback) : Order.Order {
+      Int.compare(f2.timestamp, f1.timestamp);
     };
   };
 
@@ -265,6 +280,35 @@ actor {
       case (#consistency) { "consistency" };
       case (#custom(name)) { name };
     };
+  };
+
+  // Feedback System
+
+  public shared ({ caller }) func submitFeedback(message : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can submit feedback");
+    };
+
+    if (message.size() == 0) {
+      Runtime.trap("Feedback message cannot be empty");
+    };
+
+    let feedbackEntry : Feedback = {
+      id = nextFeedbackId;
+      userId = caller;
+      message;
+      timestamp = Time.now();
+    };
+
+    feedback.add(nextFeedbackId, feedbackEntry);
+    nextFeedbackId += 1;
+  };
+
+  public query ({ caller }) func getAllFeedback() : async [Feedback] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can get all feedback");
+    };
+    feedback.values().toArray().sort();
   };
 
   // User Management

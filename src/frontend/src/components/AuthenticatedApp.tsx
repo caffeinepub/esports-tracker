@@ -1,17 +1,21 @@
-import React, { Suspense, useEffect, useState } from 'react';
-import { useGetCurrentUser, useInitializeUser, useGetCallerUserProfile } from '../hooks/useQueries';
-import { UserType } from '../backend';
-import { perfDiagnostics } from '../utils/perfDiagnostics';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import RoleSelectionPage from '../pages/RoleSelectionPage';
+import React, { Suspense, useEffect, useState } from "react";
+import { UserType } from "../backend";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import {
+  useGetCallerUserProfile,
+  useGetCurrentUser,
+  useInitializeUser,
+} from "../hooks/useQueries";
+import RoleSelectionPage from "../pages/RoleSelectionPage";
+import { perfDiagnostics } from "../utils/perfDiagnostics";
 
 // Lazy load authenticated routes for code splitting
-const ProfileSetupPage = React.lazy(() => import('../pages/ProfileSetupPage'));
-const PlayerDashboard = React.lazy(() => import('../pages/PlayerDashboard'));
-const TeamDashboard = React.lazy(() => import('../pages/TeamDashboard'));
+const ProfileSetupPage = React.lazy(() => import("../pages/ProfileSetupPage"));
+const PlayerDashboard = React.lazy(() => import("../pages/PlayerDashboard"));
+const TeamDashboard = React.lazy(() => import("../pages/TeamDashboard"));
 
 // Loading fallback component
-function LoadingFallback({ message = 'Loading...' }: { message?: string }) {
+function LoadingFallback({ message = "Loading..." }: { message?: string }) {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="text-center space-y-4">
@@ -24,8 +28,12 @@ function LoadingFallback({ message = 'Loading...' }: { message?: string }) {
 
 export default function AuthenticatedApp() {
   const { identity } = useInternetIdentity();
-  const { data: currentUser, isLoading: userLoading, isFetched: userFetched } = useGetCurrentUser();
-  const { data: userProfile, isLoading: profileLoading } = useGetCallerUserProfile();
+  const {
+    data: currentUser,
+    isLoading: userLoading,
+    isFetched: userFetched,
+  } = useGetCurrentUser();
+  const { data: userProfile } = useGetCallerUserProfile();
   const initializeUserMutation = useInitializeUser();
   const [isInitializing, setIsInitializing] = useState(false);
 
@@ -43,7 +51,7 @@ export default function AuthenticatedApp() {
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${principal}`,
           });
         } catch (error) {
-          console.error('Failed to initialize user:', error);
+          console.error("Failed to initialize user:", error);
         } finally {
           setIsInitializing(false);
         }
@@ -51,17 +59,28 @@ export default function AuthenticatedApp() {
     };
 
     initUser();
-  }, [userFetched, currentUser, identity, isInitializing, initializeUserMutation]);
+  }, [
+    userFetched,
+    currentUser,
+    identity,
+    isInitializing,
+    initializeUserMutation,
+  ]);
 
   // Track user fetch completion
   useEffect(() => {
     if (userFetched) {
-      perfDiagnostics.mark('user-fetched');
+      perfDiagnostics.mark("user-fetched");
     }
   }, [userFetched]);
 
   // Show loading state while fetching or initializing user
-  if (!userFetched || userLoading || isInitializing || initializeUserMutation.isPending) {
+  if (
+    !userFetched ||
+    userLoading ||
+    isInitializing ||
+    initializeUserMutation.isPending
+  ) {
     return <LoadingFallback message="Loading account..." />;
   }
 
@@ -93,7 +112,7 @@ export default function AuthenticatedApp() {
       </Suspense>
     );
   }
-  
+
   if (currentUser.userType === UserType.team) {
     return (
       <Suspense fallback={<LoadingFallback message="Loading dashboard..." />}>

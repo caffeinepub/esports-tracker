@@ -1,37 +1,46 @@
-import { useState, useEffect } from 'react';
-import { useGetCallerUserProfile, useGetFeed } from '../hooks/useQueries';
-import Header from '../components/Header';
-import FeedView from '../components/FeedView';
-import ProfileView from '../components/ProfileView';
-import TeamSearchView from '../components/TeamSearchView';
-import CreatePostDialog from '../components/CreatePostDialog';
-import { Button } from '../components/ui/button';
-import { Plus } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
-import { perfDiagnostics } from '../utils/perfDiagnostics';
+import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import CreatePostDialog from "../components/CreatePostDialog";
+import FeedView from "../components/FeedView";
+import Header from "../components/Header";
+import ProfileView from "../components/ProfileView";
+import TeamSearchView from "../components/TeamSearchView";
+import { Button } from "../components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../components/ui/tooltip";
+import { useGetCallerUserProfile, useGetFeed } from "../hooks/useQueries";
+import { perfDiagnostics } from "../utils/perfDiagnostics";
 
 export default function PlayerDashboard() {
-  const [currentView, setCurrentView] = useState<'feed' | 'profile' | 'teamSearch'>('feed');
+  const [currentView, setCurrentView] = useState<
+    "feed" | "profile" | "teamSearch"
+  >("feed");
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
-  
+
   const { data: userProfile } = useGetCallerUserProfile();
-  
+
   // Only fetch feed data when feed tab is active
-  const { data: feed = [], isLoading: feedLoading } = useGetFeed(currentView === 'feed');
+  const { data: feed = [], isLoading: feedLoading } = useGetFeed(
+    currentView === "feed",
+  );
 
   // Track first render
   useEffect(() => {
-    perfDiagnostics.mark('player-dashboard-render');
+    perfDiagnostics.mark("player-dashboard-render");
   }, []);
 
   return (
     <div className="min-h-screen bg-background">
       <Header currentView={currentView} onViewChange={setCurrentView} />
-      
+
       <main className="pb-20">
-        {currentView === 'feed' ? (
+        {currentView === "feed" ? (
           <FeedView feed={feed} isLoading={feedLoading} />
-        ) : currentView === 'teamSearch' ? (
+        ) : currentView === "teamSearch" ? (
           <TeamSearchView />
         ) : (
           userProfile && <ProfileView userId={userProfile.id} />
@@ -39,7 +48,7 @@ export default function PlayerDashboard() {
       </main>
 
       {/* Floating Action Button - only show on feed view */}
-      {currentView === 'feed' && (
+      {currentView === "feed" && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -58,8 +67,8 @@ export default function PlayerDashboard() {
         </TooltipProvider>
       )}
 
-      <CreatePostDialog 
-        open={isCreatePostOpen} 
+      <CreatePostDialog
+        open={isCreatePostOpen}
         onOpenChange={setIsCreatePostOpen}
       />
     </div>

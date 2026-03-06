@@ -134,9 +134,24 @@ export interface SystemHiringRequirementSearchFilters {
     skillLevel?: Level;
     searchQuery?: string;
 }
+export interface Feedback {
+    id: bigint;
+    userId: Principal;
+    message: string;
+    timestamp: bigint;
+}
 export interface _CaffeineStorageCreateCertificateResult {
     method: string;
     blob_hash: string;
+}
+export interface TalentSearchFilters {
+    hasClipOnly: boolean;
+    game?: Game;
+    role?: Role;
+    minReadinessScore?: bigint;
+    level?: Level;
+    openToTeamOnly: boolean;
+    searchQuery?: string;
 }
 export type EndorsementType = {
     __kind__: "custom";
@@ -154,22 +169,6 @@ export type EndorsementType = {
     __kind__: "reliableComms";
     reliableComms: null;
 };
-export interface TalentSearchFilters {
-    hasClipOnly: boolean;
-    game?: Game;
-    role?: Role;
-    minReadinessScore?: bigint;
-    level?: Level;
-    openToTeamOnly: boolean;
-    searchQuery?: string;
-}
-export interface Endorsement {
-    id: bigint;
-    playerId: Principal;
-    createdAt: bigint;
-    endorsementType: EndorsementType;
-    endorserId: Principal;
-}
 export type Role = {
     __kind__: "attacker";
     attacker: null;
@@ -186,6 +185,13 @@ export type Role = {
     __kind__: "sniper";
     sniper: null;
 };
+export interface Endorsement {
+    id: bigint;
+    playerId: Principal;
+    createdAt: bigint;
+    endorsementType: EndorsementType;
+    endorserId: Principal;
+}
 export interface TeamProfile {
     id: Principal;
     userType: UserType;
@@ -268,6 +274,7 @@ export interface backendInterface {
     createPost(improvementText: string, clip: ExternalBlob | null): Promise<void>;
     deleteEndorsement(endorsementId: bigint): Promise<EndorsementSummary>;
     getAllEndorsements(): Promise<Array<Endorsement>>;
+    getAllFeedback(): Promise<Array<Feedback>>;
     getAllHiringRequirements(): Promise<Array<HiringRequirement>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -287,6 +294,7 @@ export interface backendInterface {
     searchTalent(filters: TalentSearchFilters): Promise<Array<UserProfile>>;
     setUserType(userType: UserType): Promise<void>;
     submitEndorsement(playerId: Principal, endorsementType: EndorsementType): Promise<EndorsementSummary>;
+    submitFeedback(message: string): Promise<void>;
     updateReadinessRequirement(requirement: bigint): Promise<void>;
 }
 import type { Endorsement as _Endorsement, EndorsementType as _EndorsementType, ExternalBlob as _ExternalBlob, Game as _Game, HiringRequirement as _HiringRequirement, Level as _Level, Post as _Post, Role as _Role, SystemHiringRequirement as _SystemHiringRequirement, SystemHiringRequirementSearchFilters as _SystemHiringRequirementSearchFilters, TalentSearchFilters as _TalentSearchFilters, TeamProfile as _TeamProfile, User as _User, UserProfile as _UserProfile, UserRole as _UserRole, UserType as _UserType, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
@@ -486,6 +494,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getAllEndorsements();
             return from_candid_vec_n21(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getAllFeedback(): Promise<Array<Feedback>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllFeedback();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllFeedback();
+            return result;
         }
     }
     async getAllHiringRequirements(): Promise<Array<HiringRequirement>> {
@@ -751,6 +773,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.submitEndorsement(arg0, to_candid_EndorsementType_n65(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async submitFeedback(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.submitFeedback(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.submitFeedback(arg0);
             return result;
         }
     }

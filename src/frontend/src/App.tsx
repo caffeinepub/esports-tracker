@@ -1,12 +1,15 @@
-import { useInternetIdentity } from './hooks/useInternetIdentity';
-import LoginPage from './pages/LoginPage';
-import AuthenticatedApp from './components/AuthenticatedApp';
-import { Toaster } from './components/ui/sonner';
-import { perfDiagnostics } from './utils/perfDiagnostics';
-import { useEffect } from 'react';
-import DeploymentStatusCard from './components/DeploymentStatusCard';
-import { getDeploymentStatus, hasDeploymentInfo } from './utils/deploymentStatus';
-import PerfDebugOverlay from './components/PerfDebugOverlay';
+import { useEffect } from "react";
+import AuthenticatedApp from "./components/AuthenticatedApp";
+import DeploymentStatusCard from "./components/DeploymentStatusCard";
+import PerfDebugOverlay from "./components/PerfDebugOverlay";
+import { Toaster } from "./components/ui/sonner";
+import { useInternetIdentity } from "./hooks/useInternetIdentity";
+import LoginPage from "./pages/LoginPage";
+import {
+  getDeploymentStatus,
+  hasDeploymentInfo,
+} from "./utils/deploymentStatus";
+import { perfDiagnostics } from "./utils/perfDiagnostics";
 
 export default function App() {
   const { identity, isInitializing } = useInternetIdentity();
@@ -18,13 +21,13 @@ export default function App() {
   // Track authentication state changes
   useEffect(() => {
     if (!isInitializing) {
-      perfDiagnostics.mark('identity-ready');
+      perfDiagnostics.mark("identity-ready");
     }
   }, [isInitializing]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      perfDiagnostics.mark('login-complete');
+      perfDiagnostics.mark("login-complete");
     }
   }, [isAuthenticated]);
 

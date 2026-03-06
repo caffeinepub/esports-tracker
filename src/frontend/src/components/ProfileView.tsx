@@ -1,17 +1,31 @@
-import { useState } from 'react';
-import { useGetUserProfile, useGetUserTimeline, useGetCallerUserProfile, useGetPlayerEndorsementSummary, useGetPlayerEndorsements } from '../hooks/useQueries';
-import { Card, CardContent } from './ui/card';
-import { Avatar, AvatarFallback } from './ui/avatar';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Skeleton } from './ui/skeleton';
-import { Progress } from './ui/progress';
-import PostCard from './PostCard';
-import EditProfileDialog from './EditProfileDialog';
-import ReadinessBreakdownModal from './ReadinessBreakdownModal';
-import EndorsementDialog from './EndorsementDialog';
-import { TrendingUp, Edit, Users, Target, Info, CheckCircle2, Award } from 'lucide-react';
-import type { Principal } from '@dfinity/principal';
+import type { Principal } from "@dfinity/principal";
+import {
+  Award,
+  CheckCircle2,
+  Edit,
+  Info,
+  Target,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import { useState } from "react";
+import {
+  useGetCallerUserProfile,
+  useGetPlayerEndorsementSummary,
+  useGetPlayerEndorsements,
+  useGetUserProfile,
+  useGetUserTimeline,
+} from "../hooks/useQueries";
+import EditProfileDialog from "./EditProfileDialog";
+import EndorsementDialog from "./EndorsementDialog";
+import PostCard from "./PostCard";
+import ReadinessBreakdownModal from "./ReadinessBreakdownModal";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { Progress } from "./ui/progress";
+import { Skeleton } from "./ui/skeleton";
 
 interface ProfileViewProps {
   userId: Principal;
@@ -21,43 +35,48 @@ export default function ProfileView({ userId }: ProfileViewProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   const [endorsementDialogOpen, setEndorsementDialogOpen] = useState(false);
-  const { data: profile, isLoading: profileLoading } = useGetUserProfile(userId);
-  const { data: timeline, isLoading: timelineLoading } = useGetUserTimeline(userId);
+  const { data: profile, isLoading: profileLoading } =
+    useGetUserProfile(userId);
+  const { data: timeline, isLoading: timelineLoading } =
+    useGetUserTimeline(userId);
   const { data: currentUser } = useGetCallerUserProfile();
-  const { data: endorsementSummary, isLoading: endorsementLoading } = useGetPlayerEndorsementSummary(userId);
+  const { data: endorsementSummary, isLoading: endorsementLoading } =
+    useGetPlayerEndorsementSummary(userId);
   const { data: endorsements } = useGetPlayerEndorsements(userId);
 
   const isOwnProfile = currentUser?.id.toString() === userId.toString();
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
 
   const getGameLabel = (game: any) => {
-    if (game.__kind__ === 'bgmi') return 'BGMI';
-    if (game.__kind__ === 'freeFire') return 'Free Fire';
-    if (game.__kind__ === 'codm') return 'CODM';
+    if (game.__kind__ === "bgmi") return "BGMI";
+    if (game.__kind__ === "freeFire") return "Free Fire";
+    if (game.__kind__ === "codm") return "CODM";
     return game.other;
   };
 
   const getRoleLabel = (role: any) => {
-    if (role.__kind__ === 'attacker') return 'Attacker';
-    if (role.__kind__ === 'support') return 'Support';
-    if (role.__kind__ === 'sniper') return 'Sniper';
-    if (role.__kind__ === 'tank') return 'Tank';
+    if (role.__kind__ === "attacker") return "Attacker";
+    if (role.__kind__ === "support") return "Support";
+    if (role.__kind__ === "sniper") return "Sniper";
+    if (role.__kind__ === "tank") return "Tank";
     return role.other;
   };
 
   const getLevelLabel = (level: string) => {
-    return level === 'casual' ? 'Casual' : 'Grinder';
+    return level === "casual" ? "Casual" : "Grinder";
   };
 
-  const hasAlreadyEndorsed = endorsements?.some(e => e.endorserId.toString() === currentUser?.id.toString());
+  const hasAlreadyEndorsed = endorsements?.some(
+    (e) => e.endorserId.toString() === currentUser?.id.toString(),
+  );
 
   if (profileLoading) {
     return (
@@ -107,7 +126,10 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                 <div className="flex items-center gap-2 flex-wrap mb-2">
                   <h2 className="text-2xl font-bold">{profile.username}</h2>
                   {profile.openToTeam && (
-                    <Badge variant="outline" className="border-primary text-primary text-xs">
+                    <Badge
+                      variant="outline"
+                      className="border-primary text-primary text-xs"
+                    >
                       <Users className="w-3 h-3 mr-1" />
                       Open to Team
                     </Badge>
@@ -142,7 +164,7 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                   className="h-9 bg-[#2A78FF] hover:bg-[#2A78FF]/90"
                 >
                   <Award className="w-4 h-4 mr-2" />
-                  {hasAlreadyEndorsed ? 'Endorsed' : 'Endorse'}
+                  {hasAlreadyEndorsed ? "Endorsed" : "Endorse"}
                 </Button>
               )}
             </div>
@@ -155,20 +177,27 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                   <div className="space-y-0.5 flex-1">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium">Global Readiness Score</span>
+                      <span className="text-sm font-medium">
+                        Global Readiness Score
+                      </span>
                       <button
+                        type="button"
                         onClick={() => setBreakdownOpen(true)}
                         className="text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <Info className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <p className="text-xs text-muted-foreground pl-6">Discipline & Proof</p>
+                    <p className="text-xs text-muted-foreground pl-6">
+                      Discipline & Proof
+                    </p>
                   </div>
-                  <span className="text-2xl font-bold text-primary">{globalReadinessScore}</span>
+                  <span className="text-2xl font-bold text-primary">
+                    {globalReadinessScore}
+                  </span>
                 </div>
                 <Progress value={globalReadinessScore} className="h-2" />
-                
+
                 {/* Dynamic micro-explanation */}
                 {isOwnProfile && globalReadinessScore < 70 && (
                   <p className="text-xs text-muted-foreground pl-6 flex items-center gap-1.5">
@@ -185,14 +214,23 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                     <div className="space-y-0.5 flex-1">
                       <div className="flex items-center gap-2">
                         <Target className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Team Readiness Requirement</span>
+                        <span className="text-sm font-medium">
+                          Team Readiness Requirement
+                        </span>
                       </div>
-                      <p className="text-xs text-muted-foreground pl-6">Team-defined bar</p>
+                      <p className="text-xs text-muted-foreground pl-6">
+                        Team-defined bar
+                      </p>
                     </div>
-                    <span className="text-2xl font-bold text-muted-foreground">{readinessRequirement}</span>
+                    <span className="text-2xl font-bold text-muted-foreground">
+                      {readinessRequirement}
+                    </span>
                   </div>
-                  <Progress value={readinessRequirement} className="h-2 bg-muted" />
-                  
+                  <Progress
+                    value={readinessRequirement}
+                    className="h-2 bg-muted"
+                  />
+
                   {/* Conditional micro-explanation */}
                   {isOwnProfile && (
                     <p className="text-xs text-muted-foreground pl-6 flex items-center gap-1.5">
@@ -207,7 +245,9 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-center gap-2 text-muted-foreground">
                         <Target className="w-4 h-4" />
-                        <span className="text-sm font-medium">No active team requirement</span>
+                        <span className="text-sm font-medium">
+                          No active team requirement
+                        </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Turn on 'Open to Team' to appear in team searches
@@ -222,12 +262,16 @@ export default function ProfileView({ userId }: ProfileViewProps) {
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div className="p-4 rounded-md bg-card border border-border">
                 <div className="text-xs text-meta mb-1">Total Posts</div>
-                <div className="text-2xl font-bold">{timeline?.length || 0}</div>
+                <div className="text-2xl font-bold">
+                  {timeline?.length || 0}
+                </div>
               </div>
 
               <div className="p-4 rounded-md bg-card border border-border">
                 <div className="text-xs text-meta mb-1">Skill Level</div>
-                <div className="text-2xl font-bold">{getLevelLabel(profile.level)}</div>
+                <div className="text-2xl font-bold">
+                  {getLevelLabel(profile.level)}
+                </div>
               </div>
             </div>
           </div>
@@ -258,8 +302,12 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                       <div className="flex items-center gap-2 p-3 rounded-md bg-[#1A1A1A] border border-[#333333]">
                         <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-[#AAAAAA] truncate">Played scrims</p>
-                          <p className="text-xs text-[#666666]">({Number(endorsementSummary.scrimPartnerCount)})</p>
+                          <p className="text-sm text-[#AAAAAA] truncate">
+                            Played scrims
+                          </p>
+                          <p className="text-xs text-[#666666]">
+                            ({Number(endorsementSummary.scrimPartnerCount)})
+                          </p>
                         </div>
                       </div>
                     )}
@@ -268,8 +316,12 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                       <div className="flex items-center gap-2 p-3 rounded-md bg-[#1A1A1A] border border-[#333333]">
                         <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-[#AAAAAA] truncate">Reliable comms</p>
-                          <p className="text-xs text-[#666666]">({Number(endorsementSummary.reliableCommsCount)})</p>
+                          <p className="text-sm text-[#AAAAAA] truncate">
+                            Reliable comms
+                          </p>
+                          <p className="text-xs text-[#666666]">
+                            ({Number(endorsementSummary.reliableCommsCount)})
+                          </p>
                         </div>
                       </div>
                     )}
@@ -278,8 +330,12 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                       <div className="flex items-center gap-2 p-3 rounded-md bg-[#1A1A1A] border border-[#333333]">
                         <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-[#AAAAAA] truncate">Shows up on time</p>
-                          <p className="text-xs text-[#666666]">({Number(endorsementSummary.punctualCount)})</p>
+                          <p className="text-sm text-[#AAAAAA] truncate">
+                            Shows up on time
+                          </p>
+                          <p className="text-xs text-[#666666]">
+                            ({Number(endorsementSummary.punctualCount)})
+                          </p>
                         </div>
                       </div>
                     )}
@@ -288,37 +344,52 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                       <div className="flex items-center gap-2 p-3 rounded-md bg-[#1A1A1A] border border-[#333333]">
                         <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-[#AAAAAA] truncate">30-day streak</p>
-                          <p className="text-xs text-[#666666]">({Number(endorsementSummary.consistencyCount)})</p>
+                          <p className="text-sm text-[#AAAAAA] truncate">
+                            30-day streak
+                          </p>
+                          <p className="text-xs text-[#666666]">
+                            ({Number(endorsementSummary.consistencyCount)})
+                          </p>
                         </div>
                       </div>
                     )}
 
                     {/* Custom Endorsements */}
-                    {endorsementSummary.customEndorsements.map(([nameObj, countObj], index) => (
-                      <div key={index} className="flex items-center gap-2 p-3 rounded-md bg-[#1A1A1A] border border-[#333333]">
-                        <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-[#AAAAAA] truncate">{nameObj.name}</p>
-                          <p className="text-xs text-[#666666]">({Number(countObj.count)})</p>
+                    {endorsementSummary.customEndorsements.map(
+                      ([nameObj, countObj]) => (
+                        <div
+                          key={nameObj.name}
+                          className="flex items-center gap-2 p-3 rounded-md bg-[#1A1A1A] border border-[#333333]"
+                        >
+                          <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-[#AAAAAA] truncate">
+                              {nameObj.name}
+                            </p>
+                            <p className="text-xs text-[#666666]">
+                              ({Number(countObj.count)})
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
 
                   {/* Empty State */}
                   {Number(endorsementSummary.scrimPartnerCount) === 0 &&
-                   Number(endorsementSummary.reliableCommsCount) === 0 &&
-                   Number(endorsementSummary.punctualCount) === 0 &&
-                   Number(endorsementSummary.consistencyCount) === 0 &&
-                   endorsementSummary.customEndorsements.length === 0 && (
-                    <div className="text-center py-8">
-                      <Award className="w-12 h-12 text-[#666666] mx-auto mb-3" />
-                      <p className="text-[#AAAAAA] text-sm">
-                        {isOwnProfile ? 'No endorsements yet' : 'Be the first to endorse this player'}
-                      </p>
-                    </div>
-                  )}
+                    Number(endorsementSummary.reliableCommsCount) === 0 &&
+                    Number(endorsementSummary.punctualCount) === 0 &&
+                    Number(endorsementSummary.consistencyCount) === 0 &&
+                    endorsementSummary.customEndorsements.length === 0 && (
+                      <div className="text-center py-8">
+                        <Award className="w-12 h-12 text-[#666666] mx-auto mb-3" />
+                        <p className="text-[#AAAAAA] text-sm">
+                          {isOwnProfile
+                            ? "No endorsements yet"
+                            : "Be the first to endorse this player"}
+                        </p>
+                      </div>
+                    )}
                 </>
               )}
             </div>
@@ -329,7 +400,7 @@ export default function ProfileView({ userId }: ProfileViewProps) {
       {/* Timeline */}
       <div className="space-y-4">
         <h3 className="text-lg font-bold px-1">Skill Timeline</h3>
-        
+
         {timelineLoading ? (
           <div className="space-y-4">
             {[1, 2].map((i) => (
@@ -350,7 +421,11 @@ export default function ProfileView({ userId }: ProfileViewProps) {
         ) : timeline && timeline.length > 0 ? (
           <div className="space-y-4">
             {timeline.map((post) => (
-              <PostCard key={post.id.toString()} post={post} currentUserId={currentUser?.id} />
+              <PostCard
+                key={post.id.toString()}
+                post={post}
+                currentUserId={currentUser?.id}
+              />
             ))}
           </div>
         ) : (
@@ -360,7 +435,9 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                 <TrendingUp className="w-8 h-8 text-muted-foreground" />
               </div>
               <p className="text-muted-foreground">
-                {isOwnProfile ? "You haven't posted any updates yet" : 'No posts yet'}
+                {isOwnProfile
+                  ? "You haven't posted any updates yet"
+                  : "No posts yet"}
               </p>
             </CardContent>
           </Card>
@@ -374,7 +451,10 @@ export default function ProfileView({ userId }: ProfileViewProps) {
             onOpenChange={setEditDialogOpen}
             profile={profile}
           />
-          <ReadinessBreakdownModal open={breakdownOpen} onOpenChange={setBreakdownOpen} />
+          <ReadinessBreakdownModal
+            open={breakdownOpen}
+            onOpenChange={setBreakdownOpen}
+          />
         </>
       )}
 

@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useGetCallerUserProfile } from '../hooks/useQueries';
-import PostCard from './PostCard';
-import { Skeleton } from './ui/skeleton';
-import { Card, CardContent } from './ui/card';
-import { Progress } from './ui/progress';
-import { TrendingUp, Target, Info } from 'lucide-react';
-import ReadinessBreakdownModal from './ReadinessBreakdownModal';
-import type { Post } from '../backend';
+import { Info, Target, TrendingUp } from "lucide-react";
+import { useState } from "react";
+import type { Post } from "../backend";
+import { useGetCallerUserProfile } from "../hooks/useQueries";
+import PostCard from "./PostCard";
+import ReadinessBreakdownModal from "./ReadinessBreakdownModal";
+import { Card, CardContent } from "./ui/card";
+import { Progress } from "./ui/progress";
+import { Skeleton } from "./ui/skeleton";
 
 interface FeedViewProps {
   feed: Post[];
@@ -21,7 +21,10 @@ export default function FeedView({ feed, isLoading }: FeedViewProps) {
     return (
       <div className="container max-w-2xl mx-auto px-4 py-6 space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-card rounded-md border border-border p-4 space-y-3">
+          <div
+            key={i}
+            className="bg-card rounded-md border border-border p-4 space-y-3"
+          >
             <div className="flex items-center gap-3">
               <Skeleton className="w-10 h-10 rounded-full" />
               <div className="space-y-2 flex-1">
@@ -36,8 +39,12 @@ export default function FeedView({ feed, isLoading }: FeedViewProps) {
     );
   }
 
-  const globalReadinessScore = currentUser ? Number(currentUser.globalReadinessScore) : 0;
-  const readinessRequirement = currentUser ? Number(currentUser.readinessRequirement) : 0;
+  const globalReadinessScore = currentUser
+    ? Number(currentUser.globalReadinessScore)
+    : 0;
+  const readinessRequirement = currentUser
+    ? Number(currentUser.readinessRequirement)
+    : 0;
 
   // Determine if user has active team requirement or has applied to a team
   // For now, we'll show the team readiness requirement if it's set (> 0)
@@ -57,20 +64,27 @@ export default function FeedView({ feed, isLoading }: FeedViewProps) {
                   <div className="space-y-0.5 flex-1">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium">Global Readiness Score</span>
+                      <span className="text-sm font-medium">
+                        Global Readiness Score
+                      </span>
                       <button
+                        type="button"
                         onClick={() => setBreakdownOpen(true)}
                         className="text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <Info className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <p className="text-xs text-muted-foreground pl-6">Discipline & Proof</p>
+                    <p className="text-xs text-muted-foreground pl-6">
+                      Discipline & Proof
+                    </p>
                   </div>
-                  <span className="text-2xl font-bold text-primary">{globalReadinessScore}</span>
+                  <span className="text-2xl font-bold text-primary">
+                    {globalReadinessScore}
+                  </span>
                 </div>
                 <Progress value={globalReadinessScore} className="h-2" />
-                
+
                 {/* Dynamic micro-explanation */}
                 {globalReadinessScore < 70 && (
                   <p className="text-xs text-muted-foreground pl-6 flex items-center gap-1.5">
@@ -91,14 +105,23 @@ export default function FeedView({ feed, isLoading }: FeedViewProps) {
                     <div className="space-y-0.5 flex-1">
                       <div className="flex items-center gap-2">
                         <Target className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Team Readiness Requirement</span>
+                        <span className="text-sm font-medium">
+                          Team Readiness Requirement
+                        </span>
                       </div>
-                      <p className="text-xs text-muted-foreground pl-6">Team-defined bar</p>
+                      <p className="text-xs text-muted-foreground pl-6">
+                        Team-defined bar
+                      </p>
                     </div>
-                    <span className="text-2xl font-bold text-muted-foreground">{readinessRequirement}</span>
+                    <span className="text-2xl font-bold text-muted-foreground">
+                      {readinessRequirement}
+                    </span>
                   </div>
-                  <Progress value={readinessRequirement} className="h-2 bg-muted" />
-                  
+                  <Progress
+                    value={readinessRequirement}
+                    className="h-2 bg-muted"
+                  />
+
                   {/* Conditional micro-explanation */}
                   <p className="text-xs text-muted-foreground pl-6 flex items-center gap-1.5">
                     <span>🔧</span>
@@ -113,7 +136,9 @@ export default function FeedView({ feed, isLoading }: FeedViewProps) {
                 <div className="space-y-2">
                   <div className="flex items-center justify-center gap-2 text-muted-foreground">
                     <Target className="w-5 h-5" />
-                    <span className="text-sm font-medium">No active team requirement</span>
+                    <span className="text-sm font-medium">
+                      No active team requirement
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Turn on 'Open to Team' to appear in team searches
@@ -141,12 +166,19 @@ export default function FeedView({ feed, isLoading }: FeedViewProps) {
       ) : (
         <div className="space-y-4">
           {feed.map((post) => (
-            <PostCard key={post.id.toString()} post={post} currentUserId={currentUser?.id} />
+            <PostCard
+              key={post.id.toString()}
+              post={post}
+              currentUserId={currentUser?.id}
+            />
           ))}
         </div>
       )}
 
-      <ReadinessBreakdownModal open={breakdownOpen} onOpenChange={setBreakdownOpen} />
+      <ReadinessBreakdownModal
+        open={breakdownOpen}
+        onOpenChange={setBreakdownOpen}
+      />
     </div>
   );
 }

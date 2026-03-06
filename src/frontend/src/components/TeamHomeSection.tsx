@@ -1,15 +1,21 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { Building2, Briefcase, Search } from 'lucide-react';
-import { useGetTeamProfile } from '../hooks/useQueries';
+import { Briefcase, Building2, Search } from "lucide-react";
+import { useGetTeamProfile } from "../hooks/useQueries";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 
 interface TeamHomeSectionProps {
-  onNavigate: (view: 'profile' | 'hiring' | 'talent') => void;
+  onNavigate: (view: "profile" | "hiring" | "talent") => void;
 }
 
 export default function TeamHomeSection({ onNavigate }: TeamHomeSectionProps) {
   const { data: teamProfile } = useGetTeamProfile(null);
 
-  const teamName = teamProfile?.teamName || 'Team';
+  const teamName = teamProfile?.teamName || "Team";
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-background px-4 py-8">
@@ -28,7 +34,8 @@ export default function TeamHomeSection({ onNavigate }: TeamHomeSectionProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Team Profile Tile */}
           <button
-            onClick={() => onNavigate('profile')}
+            type="button"
+            onClick={() => onNavigate("profile")}
             className="group text-left transition-all hover:scale-105"
           >
             <Card className="h-full bg-card border-2 border-border hover:border-primary transition-colors cursor-pointer">
@@ -46,7 +53,8 @@ export default function TeamHomeSection({ onNavigate }: TeamHomeSectionProps) {
 
           {/* Hiring Posts Tile */}
           <button
-            onClick={() => onNavigate('hiring')}
+            type="button"
+            onClick={() => onNavigate("hiring")}
             className="group text-left transition-all hover:scale-105"
           >
             <Card className="h-full bg-card border-2 border-border hover:border-primary transition-colors cursor-pointer">
@@ -64,7 +72,8 @@ export default function TeamHomeSection({ onNavigate }: TeamHomeSectionProps) {
 
           {/* Talent Finder Tile */}
           <button
-            onClick={() => onNavigate('talent')}
+            type="button"
+            onClick={() => onNavigate("talent")}
             className="group text-left transition-all hover:scale-105"
           >
             <Card className="h-full bg-card border-2 border-border hover:border-primary transition-colors cursor-pointer">

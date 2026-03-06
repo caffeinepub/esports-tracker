@@ -1,18 +1,26 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, ExternalLink, Info } from 'lucide-react';
-import { DeploymentStatus } from '../utils/deploymentStatus';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { CheckCircle2, ExternalLink, Info, XCircle } from "lucide-react";
+import type { DeploymentStatus } from "../utils/deploymentStatus";
 
 interface DeploymentStatusCardProps {
   status: DeploymentStatus;
 }
 
-export default function DeploymentStatusCard({ status }: DeploymentStatusCardProps) {
-  const isSuccess = status.status === 'success';
-  const isFailure = status.status === 'failure';
+export default function DeploymentStatusCard({
+  status,
+}: DeploymentStatusCardProps) {
+  const isSuccess = status.status === "success";
+  const isFailure = status.status === "failure";
 
-  if (status.status === 'unknown' && !status.errorMessage && !status.logUrl) {
+  if (status.status === "unknown" && !status.errorMessage && !status.logUrl) {
     return null;
   }
 
@@ -22,7 +30,9 @@ export default function DeploymentStatusCard({ status }: DeploymentStatusCardPro
         <div className="flex items-center gap-2">
           {isSuccess && <CheckCircle2 className="w-5 h-5 text-green-500" />}
           {isFailure && <XCircle className="w-5 h-5 text-destructive" />}
-          {!isSuccess && !isFailure && <Info className="w-5 h-5 text-muted-foreground" />}
+          {!isSuccess && !isFailure && (
+            <Info className="w-5 h-5 text-muted-foreground" />
+          )}
           <CardTitle className="text-lg">Deployment Status</CardTitle>
         </div>
         {status.timestamp && (
@@ -36,8 +46,10 @@ export default function DeploymentStatusCard({ status }: DeploymentStatusCardPro
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Status:</span>
           <Badge
-            variant={isSuccess ? 'default' : isFailure ? 'destructive' : 'secondary'}
-            className={isSuccess ? 'bg-green-500 hover:bg-green-600' : ''}
+            variant={
+              isSuccess ? "default" : isFailure ? "destructive" : "secondary"
+            }
+            className={isSuccess ? "bg-green-500 hover:bg-green-600" : ""}
           >
             {status.status.toUpperCase()}
           </Badge>
@@ -48,7 +60,9 @@ export default function DeploymentStatusCard({ status }: DeploymentStatusCardPro
           <div className="space-y-3">
             {status.canisterId && (
               <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Canister ID:</p>
+                <p className="text-sm font-medium text-foreground">
+                  Canister ID:
+                </p>
                 <code className="block px-3 py-2 bg-muted rounded text-xs font-mono break-all">
                   {status.canisterId}
                 </code>
@@ -56,7 +70,9 @@ export default function DeploymentStatusCard({ status }: DeploymentStatusCardPro
             )}
             {status.frontendUrl && (
               <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Frontend URL:</p>
+                <p className="text-sm font-medium text-foreground">
+                  Frontend URL:
+                </p>
                 <a
                   href={status.frontendUrl}
                   target="_blank"
@@ -100,7 +116,9 @@ export default function DeploymentStatusCard({ status }: DeploymentStatusCardPro
         {/* Log URL for unknown status */}
         {!isSuccess && !isFailure && status.logUrl && (
           <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">Deployment Logs:</p>
+            <p className="text-sm font-medium text-foreground">
+              Deployment Logs:
+            </p>
             <a
               href={status.logUrl}
               target="_blank"

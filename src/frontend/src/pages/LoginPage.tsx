@@ -1,22 +1,25 @@
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { Button } from '../components/ui/button';
-import { TrendingUp } from 'lucide-react';
-import { perfDiagnostics } from '../utils/perfDiagnostics';
-import { useEffect } from 'react';
-import DeploymentStatusCard from '../components/DeploymentStatusCard';
-import { getDeploymentStatus, hasDeploymentInfo } from '../utils/deploymentStatus';
+import { TrendingUp } from "lucide-react";
+import { useEffect } from "react";
+import DeploymentStatusCard from "../components/DeploymentStatusCard";
+import { Button } from "../components/ui/button";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import {
+  getDeploymentStatus,
+  hasDeploymentInfo,
+} from "../utils/deploymentStatus";
+import { perfDiagnostics } from "../utils/perfDiagnostics";
 
 export default function LoginPage() {
   const { login, loginStatus } = useInternetIdentity();
 
-  const isLoggingIn = loginStatus === 'logging-in';
+  const isLoggingIn = loginStatus === "logging-in";
   const deploymentStatus = getDeploymentStatus();
   const showDeploymentStatus = hasDeploymentInfo();
 
   // Track first render in development
   useEffect(() => {
     if (import.meta.env.DEV) {
-      perfDiagnostics.mark('login-page-render');
+      perfDiagnostics.mark("login-page-render");
     }
   }, []);
 
@@ -24,7 +27,7 @@ export default function LoginPage() {
     try {
       await login();
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
     }
   };
 
@@ -35,14 +38,15 @@ export default function LoginPage() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-card border border-border">
           <TrendingUp className="w-8 h-8 text-primary" />
         </div>
-        
+
         {/* Title */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">
             eSports Progress Tracker
           </h1>
           <p className="text-muted-foreground">
-            Professional platform for eSports players to track progress and connect with teams
+            Professional platform for eSports players to track progress and
+            connect with teams
           </p>
         </div>
 
@@ -59,10 +63,10 @@ export default function LoginPage() {
               Connecting...
             </>
           ) : (
-            'Continue with Google'
+            "Continue with Google"
           )}
         </Button>
-        
+
         <p className="text-xs text-meta">
           Fast and secure authentication for testing
         </p>
@@ -78,7 +82,7 @@ export default function LoginPage() {
       {/* Footer */}
       <footer className="absolute bottom-6 text-center text-sm text-meta">
         <p>
-          © 2026. Built with love using{' '}
+          © 2026. Built with love using{" "}
           <a
             href="https://caffeine.ai"
             target="_blank"

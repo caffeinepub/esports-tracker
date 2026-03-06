@@ -1,14 +1,21 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
-import { Button } from './ui/button';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { Checkbox } from './ui/checkbox';
-import { useSubmitEndorsement } from '../hooks/useQueries';
-import { CheckCircle2, Loader2 } from 'lucide-react';
-import type { Principal } from '@dfinity/principal';
-import type { EndorsementType } from '../backend';
-import { toast } from 'sonner';
+import type { Principal } from "@dfinity/principal";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import type { EndorsementType } from "../backend";
+import { useSubmitEndorsement } from "../hooks/useQueries";
+import { Button } from "./ui/button";
+import { Checkbox } from "./ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 interface EndorsementDialogProps {
   open: boolean;
@@ -18,15 +25,36 @@ interface EndorsementDialogProps {
 }
 
 const PREDEFINED_ENDORSEMENTS = [
-  { id: 'scrimPartner', label: 'Played scrims with this player', type: { __kind__: 'scrimPartner', scrimPartner: null } as EndorsementType },
-  { id: 'reliableComms', label: 'Reliable in team comms', type: { __kind__: 'reliableComms', reliableComms: null } as EndorsementType },
-  { id: 'punctual', label: 'Shows up on time', type: { __kind__: 'punctual', punctual: null } as EndorsementType },
-  { id: 'consistency', label: 'Completed 30-day consistency streak', type: { __kind__: 'consistency', consistency: null } as EndorsementType },
+  {
+    id: "scrimPartner",
+    label: "Played scrims with this player",
+    type: { __kind__: "scrimPartner", scrimPartner: null } as EndorsementType,
+  },
+  {
+    id: "reliableComms",
+    label: "Reliable in team comms",
+    type: { __kind__: "reliableComms", reliableComms: null } as EndorsementType,
+  },
+  {
+    id: "punctual",
+    label: "Shows up on time",
+    type: { __kind__: "punctual", punctual: null } as EndorsementType,
+  },
+  {
+    id: "consistency",
+    label: "Completed 30-day consistency streak",
+    type: { __kind__: "consistency", consistency: null } as EndorsementType,
+  },
 ];
 
-export default function EndorsementDialog({ open, onOpenChange, playerId, playerName }: EndorsementDialogProps) {
-  const [selectedEndorsement, setSelectedEndorsement] = useState<string>('');
-  const [customEndorsement, setCustomEndorsement] = useState<string>('');
+export default function EndorsementDialog({
+  open,
+  onOpenChange,
+  playerId,
+  playerName,
+}: EndorsementDialogProps) {
+  const [selectedEndorsement, setSelectedEndorsement] = useState<string>("");
+  const [customEndorsement, setCustomEndorsement] = useState<string>("");
   const [useCustom, setUseCustom] = useState(false);
 
   const submitEndorsement = useSubmitEndorsement();
@@ -36,30 +64,35 @@ export default function EndorsementDialog({ open, onOpenChange, playerId, player
 
     if (useCustom) {
       if (!customEndorsement.trim()) {
-        toast.error('Please enter a custom endorsement');
+        toast.error("Please enter a custom endorsement");
         return;
       }
-      endorsementType = { __kind__: 'custom', custom: customEndorsement.trim() };
+      endorsementType = {
+        __kind__: "custom",
+        custom: customEndorsement.trim(),
+      };
     } else {
       if (!selectedEndorsement) {
-        toast.error('Please select an endorsement');
+        toast.error("Please select an endorsement");
         return;
       }
-      const selected = PREDEFINED_ENDORSEMENTS.find(e => e.id === selectedEndorsement);
+      const selected = PREDEFINED_ENDORSEMENTS.find(
+        (e) => e.id === selectedEndorsement,
+      );
       if (!selected) return;
       endorsementType = selected.type;
     }
 
     try {
       await submitEndorsement.mutateAsync({ playerId, endorsementType });
-      toast.success('Endorsement submitted successfully');
+      toast.success("Endorsement submitted successfully");
       onOpenChange(false);
-      setSelectedEndorsement('');
-      setCustomEndorsement('');
+      setSelectedEndorsement("");
+      setCustomEndorsement("");
       setUseCustom(false);
     } catch (error: any) {
-      console.error('Failed to submit endorsement:', error);
-      toast.error(error.message || 'Failed to submit endorsement');
+      console.error("Failed to submit endorsement:", error);
+      toast.error(error.message || "Failed to submit endorsement");
     }
   };
 
@@ -67,23 +100,29 @@ export default function EndorsementDialog({ open, onOpenChange, playerId, player
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#1A1A1A] border-[#333333] text-[#F5F5F5] max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Endorse {playerName}</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            Endorse {playerName}
+          </DialogTitle>
           <DialogDescription className="text-[#AAAAAA]">
-            Select one endorsement to verify this player's credibility. You can only endorse each player once.
+            Select one endorsement to verify this player's credibility. You can
+            only endorse each player once.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {/* Predefined Endorsements */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium text-[#F5F5F5]">Predefined Endorsements</Label>
+            <Label className="text-sm font-medium text-[#F5F5F5]">
+              Predefined Endorsements
+            </Label>
             {PREDEFINED_ENDORSEMENTS.map((endorsement) => (
-              <div
+              <button
                 key={endorsement.id}
-                className={`flex items-start gap-3 p-3 rounded-md border transition-colors cursor-pointer ${
+                type="button"
+                className={`w-full flex items-start gap-3 p-3 rounded-md border transition-colors cursor-pointer text-left ${
                   selectedEndorsement === endorsement.id && !useCustom
-                    ? 'border-[#2A78FF] bg-[#2A78FF]/10'
-                    : 'border-[#333333] hover:border-[#666666]'
+                    ? "border-[#2A78FF] bg-[#2A78FF]/10"
+                    : "border-[#333333] hover:border-[#666666]"
                 }`}
                 onClick={() => {
                   setSelectedEndorsement(endorsement.id);
@@ -97,15 +136,17 @@ export default function EndorsementDialog({ open, onOpenChange, playerId, player
                       setSelectedEndorsement(endorsement.id);
                       setUseCustom(false);
                     } else {
-                      setSelectedEndorsement('');
+                      setSelectedEndorsement("");
                     }
                   }}
                   className="mt-0.5"
                 />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-[#F5F5F5]">{endorsement.label}</p>
+                  <p className="text-sm font-medium text-[#F5F5F5]">
+                    {endorsement.label}
+                  </p>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 
@@ -118,11 +159,14 @@ export default function EndorsementDialog({ open, onOpenChange, playerId, player
                 onCheckedChange={(checked) => {
                   setUseCustom(!!checked);
                   if (checked) {
-                    setSelectedEndorsement('');
+                    setSelectedEndorsement("");
                   }
                 }}
               />
-              <Label htmlFor="useCustom" className="text-sm font-medium text-[#F5F5F5] cursor-pointer">
+              <Label
+                htmlFor="useCustom"
+                className="text-sm font-medium text-[#F5F5F5] cursor-pointer"
+              >
                 Custom endorsement (optional)
               </Label>
             </div>
@@ -149,7 +193,11 @@ export default function EndorsementDialog({ open, onOpenChange, playerId, player
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={submitEndorsement.isPending || (!selectedEndorsement && !useCustom) || (useCustom && !customEndorsement.trim())}
+            disabled={
+              submitEndorsement.isPending ||
+              (!selectedEndorsement && !useCustom) ||
+              (useCustom && !customEndorsement.trim())
+            }
             className="bg-[#2A78FF] hover:bg-[#2A78FF]/90 text-white"
           >
             {submitEndorsement.isPending ? (

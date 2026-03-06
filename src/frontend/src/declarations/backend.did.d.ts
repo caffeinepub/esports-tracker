@@ -30,6 +30,12 @@ export type EndorsementType = { 'custom' : string } |
   { 'consistency' : null } |
   { 'reliableComms' : null };
 export type ExternalBlob = Uint8Array;
+export interface Feedback {
+  'id' : bigint,
+  'userId' : Principal,
+  'message' : string,
+  'timestamp' : bigint,
+}
 export type Game = { 'freeFire' : null } |
   { 'other' : string } |
   { 'bgmi' : null } |
@@ -167,6 +173,7 @@ export interface _SERVICE {
   'createPost' : ActorMethod<[string, [] | [ExternalBlob]], undefined>,
   'deleteEndorsement' : ActorMethod<[bigint], EndorsementSummary>,
   'getAllEndorsements' : ActorMethod<[], Array<Endorsement>>,
+  'getAllFeedback' : ActorMethod<[], Array<Feedback>>,
   'getAllHiringRequirements' : ActorMethod<[], Array<HiringRequirement>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
@@ -195,6 +202,7 @@ export interface _SERVICE {
     [Principal, EndorsementType],
     EndorsementSummary
   >,
+  'submitFeedback' : ActorMethod<[string], undefined>,
   'updateReadinessRequirement' : ActorMethod<[bigint], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;

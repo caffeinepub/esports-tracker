@@ -1,20 +1,29 @@
-import { useState, useRef } from 'react';
-import { useCreatePost } from '../hooks/useQueries';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
-import { Label } from './ui/label';
-import { Video, X } from 'lucide-react';
-import { toast } from 'sonner';
-import { ExternalBlob } from '../backend';
+import { Video, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { ExternalBlob } from "../backend";
+import { useCreatePost } from "../hooks/useQueries";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
 
 interface CreatePostDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) {
-  const [improvementText, setImprovementText] = useState('');
+export default function CreatePostDialog({
+  open,
+  onOpenChange,
+}: CreatePostDialogProps) {
+  const [improvementText, setImprovementText] = useState("");
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -25,14 +34,14 @@ export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialo
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('video/')) {
-        toast.error('Please select a video file');
+      if (!file.type.startsWith("video/")) {
+        toast.error("Please select a video file");
         return;
       }
-      
+
       // Check file size (max 50MB)
       if (file.size > 50 * 1024 * 1024) {
-        toast.error('Video file must be less than 50MB');
+        toast.error("Video file must be less than 50MB");
         return;
       }
 
@@ -49,7 +58,7 @@ export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialo
       setVideoPreview(null);
     }
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -57,7 +66,7 @@ export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialo
     e.preventDefault();
 
     if (!improvementText.trim()) {
-      toast.error('Please describe your improvement');
+      toast.error("Please describe your improvement");
       return;
     }
 
@@ -67,9 +76,11 @@ export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialo
       if (videoFile) {
         const arrayBuffer = await videoFile.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
-        clipBlob = ExternalBlob.fromBytes(uint8Array).withUploadProgress((percentage) => {
-          setUploadProgress(percentage);
-        });
+        clipBlob = ExternalBlob.fromBytes(uint8Array).withUploadProgress(
+          (percentage) => {
+            setUploadProgress(percentage);
+          },
+        );
       }
 
       await createPost.mutateAsync({
@@ -77,20 +88,20 @@ export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialo
         clip: clipBlob,
       });
 
-      toast.success('Post created successfully!');
-      setImprovementText('');
+      toast.success("Post created successfully!");
+      setImprovementText("");
       removeVideo();
       setUploadProgress(0);
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create post');
+      toast.error(error.message || "Failed to create post");
       setUploadProgress(0);
     }
   };
 
   const handleClose = () => {
     if (!createPost.isPending) {
-      setImprovementText('');
+      setImprovementText("");
       removeVideo();
       setUploadProgress(0);
       onOpenChange(false);
@@ -101,7 +112,9 @@ export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialo
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">What did you improve today?</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            What did you improve today?
+          </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Share your latest progress with the community
           </DialogDescription>
@@ -125,21 +138,22 @@ export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialo
 
           {/* Video Upload */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Gameplay Clip (Optional)</Label>
-            
+            <Label className="text-sm font-medium">
+              Gameplay Clip (Optional)
+            </Label>
+
             {!videoPreview ? (
-              <div
+              <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-border rounded-md p-6 text-center cursor-pointer hover:border-primary transition-colors"
+                className="w-full border-2 border-dashed border-border rounded-md p-6 text-center cursor-pointer hover:border-primary transition-colors"
               >
                 <Video className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">
                   Click to upload video clip
                 </p>
-                <p className="text-xs text-meta mt-1">
-                  Max 50MB
-                </p>
-              </div>
+                <p className="text-xs text-meta mt-1">Max 50MB</p>
+              </button>
             ) : (
               <div className="relative rounded-md overflow-hidden bg-black aspect-video">
                 <video
@@ -147,7 +161,9 @@ export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialo
                   className="w-full h-full object-contain"
                   controls
                   playsInline
-                />
+                >
+                  <track kind="captions" />
+                </video>
                 <Button
                   type="button"
                   variant="destructive"
@@ -170,20 +186,24 @@ export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialo
           </div>
 
           {/* Upload Progress */}
-          {createPost.isPending && uploadProgress > 0 && uploadProgress < 100 && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Uploading video...</span>
-                <span className="font-medium">{uploadProgress}%</span>
+          {createPost.isPending &&
+            uploadProgress > 0 &&
+            uploadProgress < 100 && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Uploading video...
+                  </span>
+                  <span className="font-medium">{uploadProgress}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-            </div>
-          )}
+            )}
 
           {/* Actions */}
           <div className="flex gap-2 pt-2">
@@ -207,7 +227,7 @@ export default function CreatePostDialog({ open, onOpenChange }: CreatePostDialo
                   Posting...
                 </>
               ) : (
-                'Post Update'
+                "Post Update"
               )}
             </Button>
           </div>

@@ -1,41 +1,56 @@
-import { useState, useMemo } from 'react';
-import { useSearchAllHiringRequirementsForPlayers } from '../hooks/useQueries';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Slider } from './ui/slider';
-import { Button } from './ui/button';
-import { Skeleton } from './ui/skeleton';
-import { Search, Briefcase, X } from 'lucide-react';
-import type { Game, Role, Level, SystemHiringRequirementSearchFilters } from '../backend';
+import { Briefcase, Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import type {
+  Game,
+  Level,
+  Role,
+  SystemHiringRequirementSearchFilters,
+} from "../backend";
+import { useSearchAllHiringRequirementsForPlayers } from "../hooks/useQueries";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Skeleton } from "./ui/skeleton";
+import { Slider } from "./ui/slider";
 
 export default function TeamSearchView() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [game, setGame] = useState<string>('all');
-  const [role, setRole] = useState<string>('all');
-  const [skillLevel, setSkillLevel] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [game, setGame] = useState<string>("all");
+  const [role, setRole] = useState<string>("all");
+  const [skillLevel, setSkillLevel] = useState<string>("all");
   const [minReadinessScore, setMinReadinessScore] = useState<number>(0);
 
   // Build filters object
   const filters: SystemHiringRequirementSearchFilters = useMemo(() => {
     let gameFilter: Game | undefined;
-    if (game !== 'all') {
-      if (game === 'bgmi') gameFilter = { __kind__: 'bgmi', bgmi: null };
-      else if (game === 'freeFire') gameFilter = { __kind__: 'freeFire', freeFire: null };
-      else if (game === 'codm') gameFilter = { __kind__: 'codm', codm: null };
+    if (game !== "all") {
+      if (game === "bgmi") gameFilter = { __kind__: "bgmi", bgmi: null };
+      else if (game === "freeFire")
+        gameFilter = { __kind__: "freeFire", freeFire: null };
+      else if (game === "codm") gameFilter = { __kind__: "codm", codm: null };
     }
 
     let roleFilter: Role | undefined;
-    if (role !== 'all') {
-      if (role === 'attacker') roleFilter = { __kind__: 'attacker', attacker: null };
-      else if (role === 'support') roleFilter = { __kind__: 'support', support: null };
-      else if (role === 'sniper') roleFilter = { __kind__: 'sniper', sniper: null };
-      else if (role === 'tank') roleFilter = { __kind__: 'tank', tank: null };
+    if (role !== "all") {
+      if (role === "attacker")
+        roleFilter = { __kind__: "attacker", attacker: null };
+      else if (role === "support")
+        roleFilter = { __kind__: "support", support: null };
+      else if (role === "sniper")
+        roleFilter = { __kind__: "sniper", sniper: null };
+      else if (role === "tank") roleFilter = { __kind__: "tank", tank: null };
     }
 
     let levelFilter: Level | undefined;
-    if (skillLevel !== 'all') {
+    if (skillLevel !== "all") {
       levelFilter = skillLevel as Level;
     }
 
@@ -43,23 +58,29 @@ export default function TeamSearchView() {
       game: gameFilter,
       role: roleFilter,
       skillLevel: levelFilter,
-      minReadinessScore: minReadinessScore > 0 ? BigInt(minReadinessScore) : undefined,
+      minReadinessScore:
+        minReadinessScore > 0 ? BigInt(minReadinessScore) : undefined,
       searchQuery: searchQuery.trim() || undefined,
     };
   }, [game, role, skillLevel, minReadinessScore, searchQuery]);
 
-  const { data: results = [], isLoading } = useSearchAllHiringRequirementsForPlayers(filters);
+  const { data: results = [], isLoading } =
+    useSearchAllHiringRequirementsForPlayers(filters);
 
-  const hasActiveFilters = game !== 'all' || role !== 'all' || skillLevel !== 'all' || minReadinessScore > 0;
+  const hasActiveFilters =
+    game !== "all" ||
+    role !== "all" ||
+    skillLevel !== "all" ||
+    minReadinessScore > 0;
 
   const handleClearSearch = () => {
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   const handleClearAllFilters = () => {
-    setGame('all');
-    setRole('all');
-    setSkillLevel('all');
+    setGame("all");
+    setRole("all");
+    setSkillLevel("all");
     setMinReadinessScore(0);
   };
 
@@ -68,7 +89,9 @@ export default function TeamSearchView() {
       {/* Search Header */}
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Find Teams</h1>
-        <p className="text-muted-foreground">Search for teams hiring players like you</p>
+        <p className="text-muted-foreground">
+          Search for teams hiring players like you
+        </p>
       </div>
 
       {/* Search Bar */}
@@ -177,7 +200,9 @@ export default function TeamSearchView() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">
-            {isLoading ? 'Searching...' : `${results.length} ${results.length === 1 ? 'Team' : 'Teams'} Found`}
+            {isLoading
+              ? "Searching..."
+              : `${results.length} ${results.length === 1 ? "Team" : "Teams"} Found`}
           </h2>
         </div>
 
@@ -195,21 +220,35 @@ export default function TeamSearchView() {
           <Card>
             <CardContent className="py-12 text-center">
               <Briefcase className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-2">No teams found matching your criteria</p>
-              <p className="text-sm text-meta">Try adjusting your filters or search terms</p>
+              <p className="text-muted-foreground mb-2">
+                No teams found matching your criteria
+              </p>
+              <p className="text-sm text-meta">
+                Try adjusting your filters or search terms
+              </p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
             {results.map((hiring) => (
-              <Card key={hiring.id.toString()} className="hover:border-primary/50 transition-colors">
+              <Card
+                key={hiring.id.toString()}
+                className="hover:border-primary/50 transition-colors"
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <CardTitle className="text-lg mb-1">{hiring.teamName}</CardTitle>
+                      <CardTitle className="text-lg mb-1">
+                        {hiring.teamName}
+                      </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {hiring.game.__kind__ === 'other' ? hiring.game.other : hiring.game.__kind__.toUpperCase()} •{' '}
-                        {hiring.role.__kind__ === 'other' ? hiring.role.other : hiring.role.__kind__}
+                        {hiring.game.__kind__ === "other"
+                          ? hiring.game.other
+                          : hiring.game.__kind__.toUpperCase()}{" "}
+                        •{" "}
+                        {hiring.role.__kind__ === "other"
+                          ? hiring.role.other
+                          : hiring.role.__kind__}
                       </p>
                     </div>
                   </div>
@@ -217,29 +256,40 @@ export default function TeamSearchView() {
                 <CardContent className="space-y-3">
                   <div className="flex flex-wrap gap-4 text-sm">
                     <div>
-                      <span className="text-muted-foreground">Level:</span>{' '}
-                      <span className="font-medium capitalize">{hiring.skillLevel}</span>
+                      <span className="text-muted-foreground">Level:</span>{" "}
+                      <span className="font-medium capitalize">
+                        {hiring.skillLevel}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Min Score:</span>{' '}
-                      <span className="font-medium text-primary">{Number(hiring.minReadinessScore)}</span>
+                      <span className="text-muted-foreground">Min Score:</span>{" "}
+                      <span className="font-medium text-primary">
+                        {Number(hiring.minReadinessScore)}
+                      </span>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Requirements:</p>
-                    <p className="text-sm text-foreground whitespace-pre-wrap">{hiring.requirements}</p>
+                    <p className="text-sm text-foreground whitespace-pre-wrap">
+                      {hiring.requirements}
+                    </p>
                   </div>
 
                   {hiring.contactInfo && (
                     <div className="space-y-1">
                       <p className="text-sm font-medium">Contact:</p>
-                      <p className="text-sm text-foreground">{hiring.contactInfo}</p>
+                      <p className="text-sm text-foreground">
+                        {hiring.contactInfo}
+                      </p>
                     </div>
                   )}
 
                   <p className="text-xs text-meta pt-2">
-                    Posted {new Date(Number(hiring.createdAt) / 1000000).toLocaleDateString()}
+                    Posted{" "}
+                    {new Date(
+                      Number(hiring.createdAt) / 1000000,
+                    ).toLocaleDateString()}
                   </p>
                 </CardContent>
               </Card>

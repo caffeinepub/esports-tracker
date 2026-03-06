@@ -13,7 +13,7 @@ class PerfDiagnostics {
 
   constructor() {
     this.startTime = performance.now();
-    this.mark('app-start');
+    this.mark("app-start");
   }
 
   mark(name: string): void {
@@ -26,14 +26,14 @@ class PerfDiagnostics {
   }
 
   getElapsedTime(markerName: string): number | null {
-    const marker = this.markers.find(m => m.name === markerName);
+    const marker = this.markers.find((m) => m.name === markerName);
     if (!marker) return null;
     return marker.timestamp - this.startTime;
   }
 
   getDuration(fromMarker: string, toMarker: string): number | null {
-    const from = this.markers.find(m => m.name === fromMarker);
-    const to = this.markers.find(m => m.name === toMarker);
+    const from = this.markers.find((m) => m.name === fromMarker);
+    const to = this.markers.find((m) => m.name === toMarker);
     if (!from || !to) return null;
     return to.timestamp - from.timestamp;
   }

@@ -1,10 +1,16 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Gamepad2, Trophy, AlertCircle } from 'lucide-react';
-import { UserType } from '../backend';
-import { useSetUserType } from '../hooks/useQueries';
-import { Alert, AlertDescription } from '../components/ui/alert';
+import { AlertCircle, Gamepad2, Trophy } from "lucide-react";
+import { useState } from "react";
+import { UserType } from "../backend";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { useSetUserType } from "../hooks/useQueries";
 
 export default function RoleSelectionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,8 +25,8 @@ export default function RoleSelectionPage() {
       await setUserTypeMutation.mutateAsync(role);
       // Navigation will happen automatically via AuthenticatedApp routing
     } catch (err: any) {
-      console.error('Failed to set user type:', err);
-      setError(err.message || 'Failed to set role. Please try again.');
+      console.error("Failed to set user type:", err);
+      setError(err.message || "Failed to set role. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -62,7 +68,9 @@ export default function RoleSelectionPage() {
               <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
                 <Gamepad2 className="w-8 h-8 text-primary" />
               </div>
-              <CardTitle className="text-2xl text-center">I am a Player</CardTitle>
+              <CardTitle className="text-2xl text-center">
+                I am a Player
+              </CardTitle>
               <CardDescription className="text-center text-base">
                 Track your progress and get discovered by teams
               </CardDescription>
@@ -98,7 +106,7 @@ export default function RoleSelectionPage() {
                     Setting up...
                   </>
                 ) : (
-                  'Continue as Player'
+                  "Continue as Player"
                 )}
               </Button>
             </CardContent>
@@ -110,7 +118,9 @@ export default function RoleSelectionPage() {
               <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
                 <Trophy className="w-8 h-8 text-primary" />
               </div>
-              <CardTitle className="text-2xl text-center">I represent a Team</CardTitle>
+              <CardTitle className="text-2xl text-center">
+                I represent a Team
+              </CardTitle>
               <CardDescription className="text-center text-base">
                 Find and recruit talented players
               </CardDescription>
@@ -146,7 +156,7 @@ export default function RoleSelectionPage() {
                     Setting up...
                   </>
                 ) : (
-                  'Continue as Team'
+                  "Continue as Team"
                 )}
               </Button>
             </CardContent>
@@ -157,7 +167,7 @@ export default function RoleSelectionPage() {
       {/* Footer */}
       <footer className="absolute bottom-6 text-center text-sm text-meta">
         <p>
-          © 2026. Built with love using{' '}
+          © 2026. Built with love using{" "}
           <a
             href="https://caffeine.ai"
             target="_blank"

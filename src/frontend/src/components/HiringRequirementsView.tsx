@@ -1,54 +1,72 @@
-import { useState } from 'react';
-import { useGetTeamHiringRequirements, useCreateHiringRequirement } from '../hooks/useQueries';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Slider } from './ui/slider';
-import { Skeleton } from './ui/skeleton';
-import { Plus, Briefcase } from 'lucide-react';
-import { toast } from 'sonner';
-import type { Game, Role, Level } from '../backend';
+import { Briefcase, Plus } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import type { Game, Level, Role } from "../backend";
+import {
+  useCreateHiringRequirement,
+  useGetTeamHiringRequirements,
+} from "../hooks/useQueries";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Skeleton } from "./ui/skeleton";
+import { Slider } from "./ui/slider";
+import { Textarea } from "./ui/textarea";
 
 export default function HiringRequirementsView() {
   const { data: hiringPosts, isLoading } = useGetTeamHiringRequirements(null);
   const createHiring = useCreateHiringRequirement();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [game, setGame] = useState<string>('');
-  const [role, setRole] = useState<string>('');
-  const [skillLevel, setSkillLevel] = useState<Level>('grinder' as Level);
+  const [game, setGame] = useState<string>("");
+  const [role, setRole] = useState<string>("");
+  const [skillLevel, setSkillLevel] = useState<Level>("grinder" as Level);
   const [minReadinessScore, setMinReadinessScore] = useState<number>(70);
-  const [requirements, setRequirements] = useState('');
+  const [requirements, setRequirements] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!game || !role) {
-      toast.error('Please select game and role');
+      toast.error("Please select game and role");
       return;
     }
 
     if (!requirements.trim()) {
-      toast.error('Please enter requirements');
+      toast.error("Please enter requirements");
       return;
     }
 
     let gameType: Game;
-    if (game === 'bgmi') gameType = { __kind__: 'bgmi', bgmi: null };
-    else if (game === 'freeFire') gameType = { __kind__: 'freeFire', freeFire: null };
-    else if (game === 'codm') gameType = { __kind__: 'codm', codm: null };
-    else gameType = { __kind__: 'other', other: game };
+    if (game === "bgmi") gameType = { __kind__: "bgmi", bgmi: null };
+    else if (game === "freeFire")
+      gameType = { __kind__: "freeFire", freeFire: null };
+    else if (game === "codm") gameType = { __kind__: "codm", codm: null };
+    else gameType = { __kind__: "other", other: game };
 
     let roleType: Role;
-    if (role === 'attacker') roleType = { __kind__: 'attacker', attacker: null };
-    else if (role === 'support') roleType = { __kind__: 'support', support: null };
-    else if (role === 'sniper') roleType = { __kind__: 'sniper', sniper: null };
-    else if (role === 'tank') roleType = { __kind__: 'tank', tank: null };
-    else roleType = { __kind__: 'other', other: role };
+    if (role === "attacker")
+      roleType = { __kind__: "attacker", attacker: null };
+    else if (role === "support")
+      roleType = { __kind__: "support", support: null };
+    else if (role === "sniper") roleType = { __kind__: "sniper", sniper: null };
+    else if (role === "tank") roleType = { __kind__: "tank", tank: null };
+    else roleType = { __kind__: "other", other: role };
 
     try {
       await createHiring.mutateAsync({
@@ -58,14 +76,14 @@ export default function HiringRequirementsView() {
         minReadinessScore: BigInt(minReadinessScore),
         requirements: requirements.trim(),
       });
-      toast.success('Hiring requirement posted!');
+      toast.success("Hiring requirement posted!");
       setDialogOpen(false);
-      setGame('');
-      setRole('');
-      setRequirements('');
+      setGame("");
+      setRole("");
+      setRequirements("");
       setMinReadinessScore(70);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to post requirement');
+      toast.error(error.message || "Failed to post requirement");
     }
   };
 
@@ -130,7 +148,10 @@ export default function HiringRequirementsView() {
 
               <div className="space-y-2">
                 <Label htmlFor="skillLevel">Skill Level</Label>
-                <Select value={skillLevel} onValueChange={(val) => setSkillLevel(val as Level)}>
+                <Select
+                  value={skillLevel}
+                  onValueChange={(val) => setSkillLevel(val as Level)}
+                >
                   <SelectTrigger id="skillLevel">
                     <SelectValue />
                   </SelectTrigger>
@@ -170,8 +191,12 @@ export default function HiringRequirementsView() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={createHiring.isPending}>
-                {createHiring.isPending ? 'Posting...' : 'Post Requirement'}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={createHiring.isPending}
+              >
+                {createHiring.isPending ? "Posting..." : "Post Requirement"}
               </Button>
             </form>
           </DialogContent>
@@ -182,7 +207,9 @@ export default function HiringRequirementsView() {
         <Card>
           <CardContent className="py-12 text-center">
             <Briefcase className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No hiring requirements posted yet</p>
+            <p className="text-muted-foreground">
+              No hiring requirements posted yet
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -191,24 +218,38 @@ export default function HiringRequirementsView() {
             <Card key={hiring.id.toString()}>
               <CardHeader>
                 <CardTitle className="text-lg">
-                  {hiring.game.__kind__ === 'other' ? hiring.game.other : hiring.game.__kind__.toUpperCase()} -{' '}
-                  {hiring.role.__kind__ === 'other' ? hiring.role.other : hiring.role.__kind__}
+                  {hiring.game.__kind__ === "other"
+                    ? hiring.game.other
+                    : hiring.game.__kind__.toUpperCase()}{" "}
+                  -{" "}
+                  {hiring.role.__kind__ === "other"
+                    ? hiring.role.other
+                    : hiring.role.__kind__}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex gap-4 text-sm">
                   <div>
-                    <span className="text-muted-foreground">Level:</span>{' '}
-                    <span className="font-medium capitalize">{hiring.skillLevel}</span>
+                    <span className="text-muted-foreground">Level:</span>{" "}
+                    <span className="font-medium capitalize">
+                      {hiring.skillLevel}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Min Score:</span>{' '}
-                    <span className="font-medium text-primary">{Number(hiring.minReadinessScore)}</span>
+                    <span className="text-muted-foreground">Min Score:</span>{" "}
+                    <span className="font-medium text-primary">
+                      {Number(hiring.minReadinessScore)}
+                    </span>
                   </div>
                 </div>
-                <p className="text-foreground whitespace-pre-wrap">{hiring.requirements}</p>
+                <p className="text-foreground whitespace-pre-wrap">
+                  {hiring.requirements}
+                </p>
                 <p className="text-xs text-meta">
-                  Posted {new Date(Number(hiring.createdAt) / 1000000).toLocaleDateString()}
+                  Posted{" "}
+                  {new Date(
+                    Number(hiring.createdAt) / 1000000,
+                  ).toLocaleDateString()}
                 </p>
               </CardContent>
             </Card>
