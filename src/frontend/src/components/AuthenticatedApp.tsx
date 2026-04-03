@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { UserType } from "../backend";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import {
@@ -9,12 +9,10 @@ import {
 import RoleSelectionPage from "../pages/RoleSelectionPage";
 import { perfDiagnostics } from "../utils/perfDiagnostics";
 
-// Lazy load authenticated routes for code splitting
 const ProfileSetupPage = React.lazy(() => import("../pages/ProfileSetupPage"));
 const PlayerDashboard = React.lazy(() => import("../pages/PlayerDashboard"));
 const TeamDashboard = React.lazy(() => import("../pages/TeamDashboard"));
 
-// Loading fallback component
 function LoadingFallback({ message = "Loading..." }: { message?: string }) {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -35,20 +33,26 @@ export default function AuthenticatedApp() {
   } = useGetCurrentUser();
   const { data: userProfile } = useGetCallerUserProfile();
   const initializeUserMutation = useInitializeUser();
+  const initAttempted = useRef(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  // Store mutation in ref so the effect dep list stays stable
+  const mutationRef = useRef(initializeUserMutation);
+  mutationRef.current = initializeUserMutation;
 
-  // Initialize/sync user on every login (idempotent backend call)
   useEffect(() => {
-    if (
-      !userFetched ||
-      !identity ||
-      isInitializing ||
-      initializeUserMutation.isPending
-    )
-      return;
+    if (userFetched) {
+      perfDiagnostics.mark("user-fetched");
+    }
+  }, [userFetched]);
+
+  // Initialize user exactly once after the user query has settled
+  useEffect(() => {
+    if (!userFetched || !identity || initAttempted.current) return;
+    initAttempted.current = true;
+
     const principal = identity.getPrincipal().toString();
     setIsInitializing(true);
-    initializeUserMutation
+    mutationRef.current
       .mutateAsync({
         email: `${principal.slice(0, 8)}@test.local`,
         name: `User ${principal.slice(0, 8)}`,
@@ -60,37 +64,20 @@ export default function AuthenticatedApp() {
       .finally(() => {
         setIsInitializing(false);
       });
-  }, [userFetched, identity, isInitializing, initializeUserMutation]);
+  }, [userFetched, identity]); // biome-ignore lint/correctness/useExhaustiveDependencies: mutationRef is intentionally excluded (stable ref)
 
-  // Track user fetch completion
-  useEffect(() => {
-    if (userFetched) {
-      perfDiagnostics.mark("user-fetched");
-    }
-  }, [userFetched]);
-
-  // Show loading state while fetching or initializing user
-  if (
-    !userFetched ||
-    userLoading ||
-    isInitializing ||
-    initializeUserMutation.isPending
-  ) {
+  if (!userFetched || userLoading || isInitializing) {
     return <LoadingFallback message="Loading account..." />;
   }
 
-  // Should not happen after initialization, but handle gracefully
   if (!currentUser) {
     return <LoadingFallback message="Setting up account..." />;
   }
 
-  // Route based on userType
-  // If userType is null/undefined, show role selection
   if (!currentUser.userType) {
     return <RoleSelectionPage />;
   }
 
-  // If userType is set but no profile exists, show profile setup
   if (!userProfile) {
     return (
       <Suspense fallback={<LoadingFallback message="Loading setup..." />}>
@@ -99,7 +86,6 @@ export default function AuthenticatedApp() {
     );
   }
 
-  // Route to appropriate dashboard based on userType
   if (currentUser.userType === UserType.player) {
     return (
       <Suspense fallback={<LoadingFallback message="Loading dashboard..." />}>
@@ -116,6 +102,5 @@ export default function AuthenticatedApp() {
     );
   }
 
-  // Fallback (should not reach here)
   return <LoadingFallback />;
 }
