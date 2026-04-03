@@ -264,18 +264,24 @@ actor {
 
   // Helper Functions
 
-  private func isPlayerUser(caller : Principal) : Bool {
-    if (caller.isAnonymous()) { return false };
-    // Auto-register in access control if user exists in users map but not in access control
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      switch (users.get(caller)) {
-        case (null) { return false };
-        case (?_) {
-          // User exists but not registered in access control — register them now
-          accessControlState.userRoles.add(caller, #user);
+  // Auto-register caller in AccessControl if they exist in the users map
+  private func ensureRegistered(caller : Principal) {
+    if (caller.isAnonymous()) { return };
+    switch (accessControlState.userRoles.get(caller)) {
+      case (?_) {};
+      case (null) {
+        switch (users.get(caller)) {
+          case (?_) { accessControlState.userRoles.add(caller, #user) };
+          case (null) {};
         };
       };
     };
+  };
+
+  private func isPlayerUser(caller : Principal) : Bool {
+    if (caller.isAnonymous()) { return false };
+    // Auto-register so AccessControl checks don't trap
+    ensureRegistered(caller);
     switch (users.get(caller)) {
       case (null) { false };
       case (?user) {
@@ -294,16 +300,8 @@ actor {
 
   private func isTeamUser(caller : Principal) : Bool {
     if (caller.isAnonymous()) { return false };
-    // Auto-register in access control if user exists in users map but not in access control
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      switch (users.get(caller)) {
-        case (null) { return false };
-        case (?_) {
-          // User exists but not registered in access control — register them now
-          accessControlState.userRoles.add(caller, #user);
-        };
-      };
-    };
+    // Auto-register so AccessControl checks don't trap
+    ensureRegistered(caller);
     switch (users.get(caller)) {
       case (null) { false };
       case (?user) {
@@ -344,9 +342,10 @@ actor {
   // Feedback System
 
   public shared ({ caller }) func submitFeedback(message : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can submit feedback");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
 
     if (message.size() == 0) {
       Runtime.trap("Feedback message cannot be empty");
@@ -373,13 +372,28 @@ actor {
   // User Management
 
   public shared ({ caller }) func initializeUser(email : Text, name : Text, avatar : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can initialize account");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot initialize account");
     };
 
+    // Auto-register in access control (idempotent)
+    switch (accessControlState.userRoles.get(caller)) {
+      case (?_) {};
+      case (null) { accessControlState.userRoles.add(caller, #user) };
+    };
+
+    // Idempotent: if user already exists, just update avatar/name but keep userType
     switch (users.get(caller)) {
-      case (?_) {
-        Runtime.trap("User already initialized");
+      case (?existingUser) {
+        // Update name/avatar but preserve userType
+        let updatedUser : User = {
+          id = existingUser.id;
+          email = if (email.size() > 0) email else existingUser.email;
+          name = if (name.size() > 0) name else existingUser.name;
+          avatar = if (avatar.size() > 0) avatar else existingUser.avatar;
+          userType = existingUser.userType;
+        };
+        users.add(caller, updatedUser);
       };
       case (null) {
         let user : User = {
@@ -395,8 +409,8 @@ actor {
   };
 
   public query ({ caller }) func getCurrentUser() : async User {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can get current user");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot get current user");
     };
 
     switch (users.get(caller)) {
@@ -410,8 +424,8 @@ actor {
   };
 
   public shared ({ caller }) func setUserType(userType : UserType) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can set user type");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot set user type");
     };
 
     switch (users.get(caller)) {
@@ -441,23 +455,25 @@ actor {
   // Profile & Team Management
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot view profiles");
     };
     userProfiles.get(caller);
   };
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
     userProfiles.get(user);
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can save profiles");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
 
     if (profile.username.size() == 0) {
       Runtime.trap("Username cannot be empty");
@@ -599,9 +615,10 @@ actor {
   };
 
   public query ({ caller }) func getTeamProfile(teamId : ?Principal) : async ?TeamProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view team profiles");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
 
     let id = switch (teamId) {
       case (null) { caller };
@@ -630,9 +647,10 @@ actor {
   };
 
   public query ({ caller }) func getReadinessMetrics(userId : ?Principal) : async ReadinessMetrics {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view metrics");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
 
     let id = switch (userId) {
       case (null) { caller };
@@ -790,9 +808,10 @@ actor {
   };
 
   public query ({ caller }) func getTeamHiringRequirements(teamId : ?Principal) : async [HiringRequirement] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view hiring requirements");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
 
     let id = switch (teamId) {
       case (null) { caller };
@@ -879,9 +898,10 @@ actor {
   };
 
   public query ({ caller }) func getUserTimeline(userId : Principal) : async [Post] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view timelines");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
 
     switch (userProfiles.get(userId)) {
       case (null) { Runtime.trap("User profile not found") };
@@ -971,9 +991,10 @@ actor {
   // Endorsement System
 
   public query ({ caller }) func getPlayerEndorsementSummary(playerId : Principal) : async EndorsementSummary {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view endorsements");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
 
     switch (userProfiles.get(playerId)) {
       case (null) { Runtime.trap("Player profile not found") };
@@ -1046,9 +1067,10 @@ actor {
   };
 
   public shared ({ caller }) func submitEndorsement(playerId : Principal, endorsementType : EndorsementType) : async EndorsementSummary {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can submit endorsements");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
 
     if (caller == playerId) {
       Runtime.trap("Self-endorsement is not allowed");
@@ -1096,9 +1118,10 @@ actor {
   };
 
   public query ({ caller }) func getPlayerEndorsements(playerId : Principal) : async [Endorsement] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view endorsements");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
 
     switch (userProfiles.get(playerId)) {
       case (null) { Runtime.trap("Player profile not found") };
@@ -1115,9 +1138,10 @@ actor {
   };
 
   public shared ({ caller }) func deleteEndorsement(endorsementId : Nat) : async EndorsementSummary {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can delete endorsements");
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous users cannot perform this action");
     };
+    ensureRegistered(caller);
 
     switch (endorsements.get(endorsementId)) {
       case (null) {

@@ -37,35 +37,30 @@ export default function AuthenticatedApp() {
   const initializeUserMutation = useInitializeUser();
   const [isInitializing, setIsInitializing] = useState(false);
 
-  // Initialize user on first login if needed
+  // Initialize/sync user on every login (idempotent backend call)
   useEffect(() => {
-    const initUser = async () => {
-      if (userFetched && currentUser === null && identity && !isInitializing) {
-        setIsInitializing(true);
-        try {
-          // Use principal as placeholder for email/name/avatar for MVP testing
-          const principal = identity.getPrincipal().toString();
-          await initializeUserMutation.mutateAsync({
-            email: `${principal.slice(0, 8)}@test.local`,
-            name: `User ${principal.slice(0, 8)}`,
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${principal}`,
-          });
-        } catch (error) {
-          console.error("Failed to initialize user:", error);
-        } finally {
-          setIsInitializing(false);
-        }
-      }
-    };
-
-    initUser();
-  }, [
-    userFetched,
-    currentUser,
-    identity,
-    isInitializing,
-    initializeUserMutation,
-  ]);
+    if (
+      !userFetched ||
+      !identity ||
+      isInitializing ||
+      initializeUserMutation.isPending
+    )
+      return;
+    const principal = identity.getPrincipal().toString();
+    setIsInitializing(true);
+    initializeUserMutation
+      .mutateAsync({
+        email: `${principal.slice(0, 8)}@test.local`,
+        name: `User ${principal.slice(0, 8)}`,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${principal}`,
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to initialize user:", error);
+      })
+      .finally(() => {
+        setIsInitializing(false);
+      });
+  }, [userFetched, identity, isInitializing, initializeUserMutation]);
 
   // Track user fetch completion
   useEffect(() => {

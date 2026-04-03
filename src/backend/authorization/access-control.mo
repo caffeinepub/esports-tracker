@@ -42,8 +42,7 @@ module {
     switch (state.userRoles.get(caller)) {
       case (?role) { role };
       case (null) {
-        // Return guest instead of trapping — caller hasn't initialized yet
-        #guest;
+        Runtime.trap("User is not registered");
       };
     };
   };
