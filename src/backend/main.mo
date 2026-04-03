@@ -265,8 +265,16 @@ actor {
   // Helper Functions
 
   private func isPlayerUser(caller : Principal) : Bool {
+    if (caller.isAnonymous()) { return false };
+    // Auto-register in access control if user exists in users map but not in access control
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      return false;
+      switch (users.get(caller)) {
+        case (null) { return false };
+        case (?_) {
+          // User exists but not registered in access control — register them now
+          accessControlState.userRoles.add(caller, #user);
+        };
+      };
     };
     switch (users.get(caller)) {
       case (null) { false };
@@ -285,8 +293,16 @@ actor {
   };
 
   private func isTeamUser(caller : Principal) : Bool {
+    if (caller.isAnonymous()) { return false };
+    // Auto-register in access control if user exists in users map but not in access control
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      return false;
+      switch (users.get(caller)) {
+        case (null) { return false };
+        case (?_) {
+          // User exists but not registered in access control — register them now
+          accessControlState.userRoles.add(caller, #user);
+        };
+      };
     };
     switch (users.get(caller)) {
       case (null) { false };
