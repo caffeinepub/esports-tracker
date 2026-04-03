@@ -280,6 +280,71 @@ export function useCreatePost() {
   });
 }
 
+export function useDeletePost() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (postId: bigint) => {
+      console.log("[deletePost] called with postId:", postId.toString());
+      if (!actor) throw new Error("Actor not available");
+      await actor.deletePost(postId);
+      console.log(
+        "[deletePost] backend delete successful for postId:",
+        postId.toString(),
+      );
+    },
+    onMutate: async (postId: bigint) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ["feed"] });
+      await queryClient.cancelQueries({ queryKey: ["timeline"] });
+
+      // Snapshot the previous feed value for rollback
+      const previousFeed = queryClient.getQueryData<Post[]>(["feed"]);
+
+      // Optimistically remove the post from feed cache
+      queryClient.setQueriesData<Post[]>({ queryKey: ["feed"] }, (old) =>
+        old ? old.filter((p) => p.id !== postId) : [],
+      );
+
+      // Also remove from timeline caches
+      queryClient.setQueriesData<Post[]>({ queryKey: ["timeline"] }, (old) =>
+        old ? old.filter((p) => p.id !== postId) : [],
+      );
+
+      return { previousFeed };
+    },
+    onError: (err, _postId, context) => {
+      console.error("[deletePost] error:", err);
+      // Rollback on error
+      if (context?.previousFeed) {
+        queryClient.setQueryData(["feed"], context.previousFeed);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["timeline"] });
+      queryClient.invalidateQueries({ queryKey: ["currentUserProfile"] });
+    },
+  });
+}
+
+export function useEditPost() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { postId: bigint; newText: string }) => {
+      if (!actor) throw new Error("Actor not available");
+      await actor.editPost(params.postId, params.newText);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["timeline"] });
+    },
+  });
+}
+
 // Hiring Requirements (Team Only)
 export function useGetTeamHiringRequirements(teamId: Principal | null) {
   const { actor, isFetching: actorFetching } = useActor();

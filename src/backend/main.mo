@@ -677,6 +677,54 @@ actor {
     };
   };
 
+
+  public shared ({ caller }) func deletePost(postId : Nat) : async () {
+    if (not isPlayerUser(caller)) {
+      Runtime.trap("Unauthorized: Only player users can delete posts");
+    };
+    switch (posts.get(postId)) {
+      case (null) { Runtime.trap("Post not found") };
+      case (?post) {
+        if (post.userId != caller) {
+          Runtime.trap("Unauthorized: You can only delete your own posts");
+        };
+        ignore posts.remove(postId);
+        // Decrease readiness score slightly when post is deleted
+        switch (userProfiles.get(caller)) {
+          case (?profile) {
+            let newScore = if (profile.globalReadinessScore > 1) {
+              profile.globalReadinessScore - 1;
+            } else {
+              profile.globalReadinessScore;
+            };
+            let updatedProfile = { profile with globalReadinessScore = newScore };
+            userProfiles.add(caller, updatedProfile);
+          };
+          case (null) {};
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func editPost(postId : Nat, newText : Text) : async () {
+    if (not isPlayerUser(caller)) {
+      Runtime.trap("Unauthorized: Only player users can edit posts");
+    };
+    if (newText.size() == 0) {
+      Runtime.trap("Post content cannot be empty");
+    };
+    switch (posts.get(postId)) {
+      case (null) { Runtime.trap("Post not found") };
+      case (?post) {
+        if (post.userId != caller) {
+          Runtime.trap("Unauthorized: You can only edit your own posts");
+        };
+        let updatedPost = { post with improvementText = newText };
+        posts.add(postId, updatedPost);
+      };
+    };
+  };
+
   public shared ({ caller }) func createHiringRequirement(game : Game, role : Role, skillLevel : Level, minReadinessScore : Int, requirements : Text) : async () {
     if (not isTeamUser(caller)) {
       Runtime.trap("Unauthorized: Only team users can create hiring requirements");

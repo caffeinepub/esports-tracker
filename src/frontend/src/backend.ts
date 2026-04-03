@@ -298,6 +298,8 @@ export interface backendInterface {
     createOrUpdateProfile(userType: UserType, game: Game, role: Role, level: Level, openToTeam: boolean, readinessRequirement: bigint, username: string): Promise<void>;
     createOrUpdateTeamProfile(teamName: string, gamesRecruiting: Array<Game>, description: string, requirements: string, contactInfo: string): Promise<void>;
     createPost(improvementText: string, clip: ExternalBlob | null): Promise<void>;
+    deletePost(postId: bigint): Promise<void>;
+    editPost(postId: bigint, newText: string): Promise<void>;
     deleteEndorsement(endorsementId: bigint): Promise<EndorsementSummary>;
     getAllEndorsements(): Promise<Array<Endorsement>>;
     getAllFeedback(): Promise<Array<Feedback>>;
@@ -508,6 +510,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.createPost(arg0, await to_candid_opt_n19(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async deletePost(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deletePost(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deletePost(arg0);
+            return result;
+        }
+    }
+    async editPost(arg0: bigint, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.editPost(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.editPost(arg0, arg1);
             return result;
         }
     }

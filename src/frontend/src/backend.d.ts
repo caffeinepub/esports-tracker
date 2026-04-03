@@ -205,6 +205,8 @@ export interface backendInterface {
     createOrUpdateProfile(userType: UserType, game: Game, role: Role, level: Level, openToTeam: boolean, readinessRequirement: bigint, username: string): Promise<void>;
     createOrUpdateTeamProfile(teamName: string, gamesRecruiting: Array<Game>, description: string, requirements: string, contactInfo: string): Promise<void>;
     createPost(improvementText: string, clip: ExternalBlob | null): Promise<void>;
+    deletePost(postId: bigint): Promise<void>;
+    editPost(postId: bigint, newText: string): Promise<void>;
     deleteEndorsement(endorsementId: bigint): Promise<EndorsementSummary>;
     getAllEndorsements(): Promise<Array<Endorsement>>;
     getAllFeedback(): Promise<Array<Feedback>>;
