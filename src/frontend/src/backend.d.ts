@@ -37,6 +37,15 @@ export type Game = {
     __kind__: "codm";
     codm: null;
 };
+export interface Application {
+    id: bigint;
+    status: ApplicationStatus;
+    requirementId: bigint;
+    playerId: Principal;
+    createdAt: bigint;
+    roleApplied: Role;
+    teamId: Principal;
+}
 export interface ReadinessMetrics {
     readinessRequirement: bigint;
     globalReadinessScore: bigint;
@@ -110,6 +119,17 @@ export interface Endorsement {
     endorsementType: EndorsementType;
     endorserId: Principal;
 }
+export interface ApplicationWithPlayerInfo {
+    id: bigint;
+    status: ApplicationStatus;
+    requirementId: bigint;
+    playerUsername: string;
+    playerId: Principal;
+    createdAt: bigint;
+    roleApplied: Role;
+    playerReadinessScore: bigint;
+    teamId: Principal;
+}
 export interface TeamProfile {
     id: Principal;
     userType: UserType;
@@ -160,6 +180,11 @@ export interface UserProfile {
     globalReadinessScore: bigint;
     openToTeam: boolean;
 }
+export enum ApplicationStatus {
+    pending = "pending",
+    rejected = "rejected",
+    accepted = "accepted"
+}
 export enum Level {
     grinder = "grinder",
     casual = "casual"
@@ -174,6 +199,7 @@ export enum UserType {
     team = "team"
 }
 export interface backendInterface {
+    applyToRequirement(requirementId: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createHiringRequirement(game: Game, role: Role, skillLevel: Level, minReadinessScore: bigint, requirements: string): Promise<void>;
     createOrUpdateProfile(userType: UserType, game: Game, role: Role, level: Level, openToTeam: boolean, readinessRequirement: bigint, username: string): Promise<void>;
@@ -183,10 +209,12 @@ export interface backendInterface {
     getAllEndorsements(): Promise<Array<Endorsement>>;
     getAllFeedback(): Promise<Array<Feedback>>;
     getAllHiringRequirements(): Promise<Array<HiringRequirement>>;
+    getApplicationsForTeam(): Promise<Array<ApplicationWithPlayerInfo>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCurrentUser(): Promise<User>;
     getFeed(): Promise<Array<Post>>;
+    getPlayerApplications(): Promise<Array<Application>>;
     getPlayerEndorsementSummary(playerId: Principal): Promise<EndorsementSummary>;
     getPlayerEndorsements(playerId: Principal): Promise<Array<Endorsement>>;
     getReadinessMetrics(userId: Principal | null): Promise<ReadinessMetrics>;
@@ -202,5 +230,6 @@ export interface backendInterface {
     setUserType(userType: UserType): Promise<void>;
     submitEndorsement(playerId: Principal, endorsementType: EndorsementType): Promise<EndorsementSummary>;
     submitFeedback(message: string): Promise<void>;
+    updateApplicationStatus(applicationId: bigint, newStatus: ApplicationStatus): Promise<void>;
     updateReadinessRequirement(requirement: bigint): Promise<void>;
 }

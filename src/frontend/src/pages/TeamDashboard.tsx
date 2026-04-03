@@ -1,6 +1,7 @@
 import type { Principal } from "@dfinity/principal";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
+import ApplicationsReceivedSection from "../components/ApplicationsReceivedSection";
 import HiringRequirementsView from "../components/HiringRequirementsView";
 import ProfileView from "../components/ProfileView";
 import TalentFinder from "../components/TalentFinder";
@@ -12,7 +13,7 @@ import { perfDiagnostics } from "../utils/perfDiagnostics";
 
 export default function TeamDashboard() {
   const [currentView, setCurrentView] = useState<
-    "home" | "profile" | "hiring" | "talent"
+    "home" | "profile" | "hiring" | "talent" | "applications"
   >("home");
   const [selectedPlayerId, setSelectedPlayerId] = useState<Principal | null>(
     null,
@@ -54,6 +55,7 @@ export default function TeamDashboard() {
         )}
         {currentView === "profile" && <TeamProfileView />}
         {currentView === "hiring" && <HiringRequirementsView />}
+        {currentView === "applications" && <ApplicationsReceivedSection />}
         {currentView === "talent" && (
           <>
             {talentSubView === "results" && (

@@ -167,11 +167,40 @@ actor {
     timestamp : Int;
   };
 
+  public type ApplicationStatus = {
+    #pending;
+    #accepted;
+    #rejected;
+  };
+
+  public type Application = {
+    id : Nat;
+    playerId : Principal;
+    teamId : Principal;
+    requirementId : Nat;
+    roleApplied : Role;
+    status : ApplicationStatus;
+    createdAt : Int;
+  };
+
+  public type ApplicationWithPlayerInfo = {
+    id : Nat;
+    playerId : Principal;
+    playerUsername : Text;
+    playerReadinessScore : Int;
+    teamId : Principal;
+    requirementId : Nat;
+    roleApplied : Role;
+    status : ApplicationStatus;
+    createdAt : Int;
+  };
+
   // State
   var nextPostId = 0;
   var nextHiringId = 0;
   var nextEndorsementId = 0;
   var nextFeedbackId = 0;
+  var nextApplicationId = 0;
 
   let userProfiles = Map.empty<Principal, UserProfile>();
   let teamProfiles = Map.empty<Principal, TeamProfile>();
@@ -181,6 +210,8 @@ actor {
   let endorsements = Map.empty<Nat, Endorsement>();
   let users = Map.empty<Principal, User>();
   let feedback = Map.empty<Nat, Feedback>();
+
+  let applications = Map.empty<Nat, Application>();
 
   module Post {
     public func compare(p1 : Post, p2 : Post) : Order.Order {
@@ -216,6 +247,18 @@ actor {
   module Feedback {
     public func compare(f1 : Feedback, f2 : Feedback) : Order.Order {
       Int.compare(f2.timestamp, f1.timestamp);
+    };
+  };
+
+  module Application {
+    public func compare(a1 : Application, a2 : Application) : Order.Order {
+      Int.compare(a2.createdAt, a1.createdAt);
+    };
+  };
+
+  module ApplicationWithPlayerInfo {
+    public func compare(a1 : ApplicationWithPlayerInfo, a2 : ApplicationWithPlayerInfo) : Order.Order {
+      Int.compare(a2.createdAt, a1.createdAt);
     };
   };
 
@@ -1044,5 +1087,111 @@ actor {
 
     let allEndorsements = endorsements.values().toArray();
     allEndorsements.sort();
+  };
+
+  // Player Application System
+
+  public shared ({ caller }) func applyToRequirement(requirementId : Nat) : async () {
+    if (not isPlayerUser(caller)) {
+      Runtime.trap("Unauthorized: Only player users can apply to requirements");
+    };
+
+    let requirement = switch (hiringRequirements.get(requirementId)) {
+      case (null) { Runtime.trap("Hiring requirement not found") };
+      case (?req) { req };
+    };
+
+    let existingApplications = applications.values().toArray().filter(func(app) {
+      app.playerId == caller and app.requirementId == requirementId
+    });
+
+    if (existingApplications.size() > 0) {
+      Runtime.trap("Already applied to this requirement");
+    };
+
+    let application : Application = {
+      id = nextApplicationId;
+      playerId = caller;
+      teamId = requirement.teamId;
+      requirementId;
+      roleApplied = requirement.role;
+      status = #pending;
+      createdAt = Time.now();
+    };
+
+    applications.add(nextApplicationId, application);
+    nextApplicationId += 1;
+  };
+
+  public query ({ caller }) func getPlayerApplications() : async [Application] {
+    if (not isPlayerUser(caller)) {
+      Runtime.trap("Unauthorized: Only player users can view their applications");
+    };
+
+    let playerApps = applications.values().toArray().filter(func(app) {
+      app.playerId == caller
+    });
+    playerApps.sort();
+  };
+
+  public query ({ caller }) func getApplicationsForTeam() : async [ApplicationWithPlayerInfo] {
+    if (not isTeamUser(caller)) {
+      Runtime.trap("Unauthorized: Only team users can view applications for their team");
+    };
+
+    let teamApps = applications.values().toArray().filter(func(app) {
+      app.teamId == caller
+    });
+
+    let enrichedApps = teamApps.map(func(app) {
+      let playerProfile = userProfiles.get(app.playerId);
+      let playerUsername = switch (playerProfile) {
+        case (null) { "" };
+        case (?profile) { profile.username };
+      };
+      let playerReadinessScore = switch (playerProfile) {
+        case (null) { 0 };
+        case (?profile) { profile.globalReadinessScore };
+      };
+
+      {
+        id = app.id;
+        playerId = app.playerId;
+        playerUsername;
+        playerReadinessScore;
+        teamId = app.teamId;
+        requirementId = app.requirementId;
+        roleApplied = app.roleApplied;
+        status = app.status;
+        createdAt = app.createdAt;
+      };
+    });
+
+    enrichedApps.sort(func(a, b) { ApplicationWithPlayerInfo.compare(a, b) });
+  };
+
+  public shared ({ caller }) func updateApplicationStatus(applicationId : Nat, newStatus : ApplicationStatus) : async () {
+    if (not isTeamUser(caller)) {
+      Runtime.trap("Unauthorized: Only team users can update application status");
+    };
+
+    let application = switch (applications.get(applicationId)) {
+      case (null) { Runtime.trap("Application not found") };
+      case (?app) { app };
+    };
+
+    if (application.teamId != caller) {
+      Runtime.trap("Unauthorized: You can only update applications for your own team");
+    };
+
+    switch (newStatus) {
+      case (#pending) {
+        Runtime.trap("Cannot revert application status to pending");
+      };
+      case (_) {};
+    };
+
+    let updatedApplication = { application with status = newStatus };
+    applications.add(applicationId, updatedApplication);
   };
 };

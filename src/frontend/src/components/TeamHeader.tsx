@@ -3,6 +3,7 @@ import {
   Briefcase,
   Building2,
   Home,
+  Inbox,
   LogOut,
   MessageSquare,
   Search,
@@ -22,8 +23,10 @@ import {
 } from "./ui/dropdown-menu";
 
 interface TeamHeaderProps {
-  currentView: "home" | "profile" | "hiring" | "talent";
-  onViewChange: (view: "home" | "profile" | "hiring" | "talent") => void;
+  currentView: "home" | "profile" | "hiring" | "talent" | "applications";
+  onViewChange: (
+    view: "home" | "profile" | "hiring" | "talent" | "applications",
+  ) => void;
 }
 
 export default function TeamHeader({
@@ -108,6 +111,16 @@ export default function TeamHeader({
             >
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline">Talent Finder</span>
+            </Button>
+
+            <Button
+              variant={currentView === "applications" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => onViewChange("applications")}
+              className="gap-2 h-9"
+            >
+              <Inbox className="w-4 h-4" />
+              <span className="hidden sm:inline">Applications</span>
             </Button>
 
             {/* User Menu */}

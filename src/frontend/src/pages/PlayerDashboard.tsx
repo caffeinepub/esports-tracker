@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import CreatePostDialog from "../components/CreatePostDialog";
 import FeedView from "../components/FeedView";
 import Header from "../components/Header";
+import MyApplicationsView from "../components/MyApplicationsView";
 import ProfileView from "../components/ProfileView";
 import TeamSearchView from "../components/TeamSearchView";
 import { Button } from "../components/ui/button";
@@ -17,7 +18,7 @@ import { perfDiagnostics } from "../utils/perfDiagnostics";
 
 export default function PlayerDashboard() {
   const [currentView, setCurrentView] = useState<
-    "feed" | "profile" | "teamSearch"
+    "feed" | "profile" | "teamSearch" | "myApplications"
   >("feed");
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
@@ -42,6 +43,8 @@ export default function PlayerDashboard() {
           <FeedView feed={feed} isLoading={feedLoading} />
         ) : currentView === "teamSearch" ? (
           <TeamSearchView />
+        ) : currentView === "myApplications" ? (
+          <MyApplicationsView />
         ) : (
           userProfile && <ProfileView userId={userProfile.id} />
         )}

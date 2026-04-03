@@ -1,15 +1,9 @@
-import { Briefcase, Building2, Search } from "lucide-react";
+import { Briefcase, Building2, Inbox, Search } from "lucide-react";
 import { useGetTeamProfile } from "../hooks/useQueries";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
 interface TeamHomeSectionProps {
-  onNavigate: (view: "profile" | "hiring" | "talent") => void;
+  onNavigate: (view: "profile" | "hiring" | "talent" | "applications") => void;
 }
 
 export default function TeamHomeSection({ onNavigate }: TeamHomeSectionProps) {
@@ -31,7 +25,7 @@ export default function TeamHomeSection({ onNavigate }: TeamHomeSectionProps) {
         </div>
 
         {/* Navigation Tiles */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Team Profile Tile */}
           <button
             type="button"
@@ -84,6 +78,25 @@ export default function TeamHomeSection({ onNavigate }: TeamHomeSectionProps) {
                 <CardTitle className="text-xl">Talent Finder</CardTitle>
                 <CardDescription className="text-base">
                   Search for players
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </button>
+
+          {/* Applications Received Tile */}
+          <button
+            type="button"
+            onClick={() => onNavigate("applications")}
+            className="group text-left transition-all hover:scale-105"
+          >
+            <Card className="h-full bg-card border-2 border-border hover:border-primary transition-colors cursor-pointer">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Inbox className="w-6 h-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Applications</CardTitle>
+                <CardDescription className="text-base">
+                  Review applicants
                 </CardDescription>
               </CardHeader>
             </Card>

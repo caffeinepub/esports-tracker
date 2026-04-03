@@ -82,6 +82,22 @@ export const HiringRequirement = IDL.Record({
   'teamId' : IDL.Principal,
   'requirements' : IDL.Text,
 });
+export const ApplicationStatus = IDL.Variant({
+  'pending' : IDL.Null,
+  'rejected' : IDL.Null,
+  'accepted' : IDL.Null,
+});
+export const ApplicationWithPlayerInfo = IDL.Record({
+  'id' : IDL.Nat,
+  'status' : ApplicationStatus,
+  'requirementId' : IDL.Nat,
+  'playerUsername' : IDL.Text,
+  'playerId' : IDL.Principal,
+  'createdAt' : IDL.Int,
+  'roleApplied' : Role,
+  'playerReadinessScore' : IDL.Int,
+  'teamId' : IDL.Principal,
+});
 export const UserProfile = IDL.Record({
   'id' : IDL.Principal,
   'userType' : UserType,
@@ -106,6 +122,15 @@ export const Post = IDL.Record({
   'userId' : IDL.Principal,
   'improvementText' : IDL.Text,
   'createdAt' : IDL.Int,
+});
+export const Application = IDL.Record({
+  'id' : IDL.Nat,
+  'status' : ApplicationStatus,
+  'requirementId' : IDL.Nat,
+  'playerId' : IDL.Principal,
+  'createdAt' : IDL.Int,
+  'roleApplied' : Role,
+  'teamId' : IDL.Principal,
 });
 export const ReadinessMetrics = IDL.Record({
   'readinessRequirement' : IDL.Int,
@@ -178,6 +203,7 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'applyToRequirement' : IDL.Func([IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'createHiringRequirement' : IDL.Func(
       [Game, Role, Level, IDL.Int, IDL.Text],
@@ -203,10 +229,16 @@ export const idlService = IDL.Service({
       [IDL.Vec(HiringRequirement)],
       ['query'],
     ),
+  'getApplicationsForTeam' : IDL.Func(
+      [],
+      [IDL.Vec(ApplicationWithPlayerInfo)],
+      ['query'],
+    ),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCurrentUser' : IDL.Func([], [User], ['query']),
   'getFeed' : IDL.Func([], [IDL.Vec(Post)], ['query']),
+  'getPlayerApplications' : IDL.Func([], [IDL.Vec(Application)], ['query']),
   'getPlayerEndorsementSummary' : IDL.Func(
       [IDL.Principal],
       [EndorsementSummary],
@@ -258,6 +290,7 @@ export const idlService = IDL.Service({
       [],
     ),
   'submitFeedback' : IDL.Func([IDL.Text], [], []),
+  'updateApplicationStatus' : IDL.Func([IDL.Nat, ApplicationStatus], [], []),
   'updateReadinessRequirement' : IDL.Func([IDL.Int], [], []),
 });
 
@@ -338,6 +371,22 @@ export const idlFactory = ({ IDL }) => {
     'teamId' : IDL.Principal,
     'requirements' : IDL.Text,
   });
+  const ApplicationStatus = IDL.Variant({
+    'pending' : IDL.Null,
+    'rejected' : IDL.Null,
+    'accepted' : IDL.Null,
+  });
+  const ApplicationWithPlayerInfo = IDL.Record({
+    'id' : IDL.Nat,
+    'status' : ApplicationStatus,
+    'requirementId' : IDL.Nat,
+    'playerUsername' : IDL.Text,
+    'playerId' : IDL.Principal,
+    'createdAt' : IDL.Int,
+    'roleApplied' : Role,
+    'playerReadinessScore' : IDL.Int,
+    'teamId' : IDL.Principal,
+  });
   const UserProfile = IDL.Record({
     'id' : IDL.Principal,
     'userType' : UserType,
@@ -362,6 +411,15 @@ export const idlFactory = ({ IDL }) => {
     'userId' : IDL.Principal,
     'improvementText' : IDL.Text,
     'createdAt' : IDL.Int,
+  });
+  const Application = IDL.Record({
+    'id' : IDL.Nat,
+    'status' : ApplicationStatus,
+    'requirementId' : IDL.Nat,
+    'playerId' : IDL.Principal,
+    'createdAt' : IDL.Int,
+    'roleApplied' : Role,
+    'teamId' : IDL.Principal,
   });
   const ReadinessMetrics = IDL.Record({
     'readinessRequirement' : IDL.Int,
@@ -434,6 +492,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'applyToRequirement' : IDL.Func([IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'createHiringRequirement' : IDL.Func(
         [Game, Role, Level, IDL.Int, IDL.Text],
@@ -459,10 +518,16 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(HiringRequirement)],
         ['query'],
       ),
+    'getApplicationsForTeam' : IDL.Func(
+        [],
+        [IDL.Vec(ApplicationWithPlayerInfo)],
+        ['query'],
+      ),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCurrentUser' : IDL.Func([], [User], ['query']),
     'getFeed' : IDL.Func([], [IDL.Vec(Post)], ['query']),
+    'getPlayerApplications' : IDL.Func([], [IDL.Vec(Application)], ['query']),
     'getPlayerEndorsementSummary' : IDL.Func(
         [IDL.Principal],
         [EndorsementSummary],
@@ -514,6 +579,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'submitFeedback' : IDL.Func([IDL.Text], [], []),
+    'updateApplicationStatus' : IDL.Func([IDL.Nat, ApplicationStatus], [], []),
     'updateReadinessRequirement' : IDL.Func([IDL.Int], [], []),
   });
 };

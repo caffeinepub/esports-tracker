@@ -1,5 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, MessageSquare, Search, TrendingUp, User } from "lucide-react";
+import {
+  FileSearch,
+  LogOut,
+  MessageSquare,
+  Search,
+  TrendingUp,
+  User,
+} from "lucide-react";
 import { useState } from "react";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import { useGetCallerUserProfile } from "../hooks/useQueries";
@@ -15,8 +22,10 @@ import {
 } from "./ui/dropdown-menu";
 
 interface HeaderProps {
-  currentView: "feed" | "profile" | "teamSearch";
-  onViewChange: (view: "feed" | "profile" | "teamSearch") => void;
+  currentView: "feed" | "profile" | "teamSearch" | "myApplications";
+  onViewChange: (
+    view: "feed" | "profile" | "teamSearch" | "myApplications",
+  ) => void;
 }
 
 export default function Header({ currentView, onViewChange }: HeaderProps) {
@@ -77,6 +86,17 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
             >
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline">Find Teams</span>
+            </Button>
+
+            <Button
+              variant={currentView === "myApplications" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => onViewChange("myApplications")}
+              className="gap-2 h-9"
+              data-ocid="nav.my_applications.button"
+            >
+              <FileSearch className="w-4 h-4" />
+              <span className="hidden sm:inline">My Applications</span>
             </Button>
 
             <Button

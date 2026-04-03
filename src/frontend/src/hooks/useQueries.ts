@@ -450,6 +450,69 @@ export function useDeleteEndorsement() {
   });
 }
 
+// Application Queries
+export function useApplyToRequirement() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (requirementId: bigint) => {
+      if (!actor) throw new Error("Actor not available");
+      await actor.applyToRequirement(requirementId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["playerApplications"] });
+    },
+  });
+}
+
+export function useGetPlayerApplications() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery({
+    queryKey: ["playerApplications"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getPlayerApplications();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useGetApplicationsForTeam() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery({
+    queryKey: ["teamApplications"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getApplicationsForTeam();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useUpdateApplicationStatus() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: {
+      applicationId: bigint;
+      newStatus: import("../backend").ApplicationStatus;
+    }) => {
+      if (!actor) throw new Error("Actor not available");
+      await actor.updateApplicationStatus(
+        params.applicationId,
+        params.newStatus,
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teamApplications"] });
+    },
+  });
+}
+
 // Feedback System
 export function useSubmitFeedback() {
   const { actor } = useActor();

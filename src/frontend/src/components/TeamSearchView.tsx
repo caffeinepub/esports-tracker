@@ -4,9 +4,11 @@ import type {
   Game,
   Level,
   Role,
+  SystemHiringRequirement,
   SystemHiringRequirementSearchFilters,
 } from "../backend";
 import { useSearchAllHiringRequirementsForPlayers } from "../hooks/useQueries";
+import RequirementDetailModal from "./RequirementDetailModal";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
@@ -27,6 +29,9 @@ export default function TeamSearchView() {
   const [role, setRole] = useState<string>("all");
   const [skillLevel, setSkillLevel] = useState<string>("all");
   const [minReadinessScore, setMinReadinessScore] = useState<number>(0);
+  const [selectedRequirement, setSelectedRequirement] =
+    useState<SystemHiringRequirement | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Build filters object
   const filters: SystemHiringRequirementSearchFilters = useMemo(() => {
@@ -82,6 +87,11 @@ export default function TeamSearchView() {
     setRole("all");
     setSkillLevel("all");
     setMinReadinessScore(0);
+  };
+
+  const handleOpenRequirement = (hiring: SystemHiringRequirement) => {
+    setSelectedRequirement(hiring);
+    setModalOpen(true);
   };
 
   return (
@@ -230,10 +240,11 @@ export default function TeamSearchView() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {results.map((hiring) => (
+            {results.map((hiring, idx) => (
               <Card
                 key={hiring.id.toString()}
-                className="hover:border-primary/50 transition-colors"
+                className="hover:border-primary/50 transition-colors cursor-pointer"
+                onClick={() => handleOpenRequirement(hiring)}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
@@ -269,34 +280,42 @@ export default function TeamSearchView() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">Requirements:</p>
-                    <p className="text-sm text-foreground whitespace-pre-wrap">
-                      {hiring.requirements}
-                    </p>
-                  </div>
-
-                  {hiring.contactInfo && (
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Contact:</p>
-                      <p className="text-sm text-foreground">
-                        {hiring.contactInfo}
-                      </p>
-                    </div>
-                  )}
-
-                  <p className="text-xs text-meta pt-2">
-                    Posted{" "}
-                    {new Date(
-                      Number(hiring.createdAt) / 1000000,
-                    ).toLocaleDateString()}
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {hiring.requirements}
                   </p>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <p className="text-xs text-muted-foreground">
+                      Posted{" "}
+                      {new Date(
+                        Number(hiring.createdAt) / 1000000,
+                      ).toLocaleDateString()}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenRequirement(hiring);
+                      }}
+                      data-ocid={`team.item.${idx + 1}.button`}
+                    >
+                      View Details
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
       </div>
+
+      <RequirementDetailModal
+        hiring={selectedRequirement}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 }

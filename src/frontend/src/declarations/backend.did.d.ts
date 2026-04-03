@@ -10,6 +10,29 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Application {
+  'id' : bigint,
+  'status' : ApplicationStatus,
+  'requirementId' : bigint,
+  'playerId' : Principal,
+  'createdAt' : bigint,
+  'roleApplied' : Role,
+  'teamId' : Principal,
+}
+export type ApplicationStatus = { 'pending' : null } |
+  { 'rejected' : null } |
+  { 'accepted' : null };
+export interface ApplicationWithPlayerInfo {
+  'id' : bigint,
+  'status' : ApplicationStatus,
+  'requirementId' : bigint,
+  'playerUsername' : string,
+  'playerId' : Principal,
+  'createdAt' : bigint,
+  'roleApplied' : Role,
+  'playerReadinessScore' : bigint,
+  'teamId' : Principal,
+}
 export interface Endorsement {
   'id' : bigint,
   'playerId' : Principal,
@@ -157,6 +180,7 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'applyToRequirement' : ActorMethod<[bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createHiringRequirement' : ActorMethod<
     [Game, Role, Level, bigint, string],
@@ -175,10 +199,12 @@ export interface _SERVICE {
   'getAllEndorsements' : ActorMethod<[], Array<Endorsement>>,
   'getAllFeedback' : ActorMethod<[], Array<Feedback>>,
   'getAllHiringRequirements' : ActorMethod<[], Array<HiringRequirement>>,
+  'getApplicationsForTeam' : ActorMethod<[], Array<ApplicationWithPlayerInfo>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCurrentUser' : ActorMethod<[], User>,
   'getFeed' : ActorMethod<[], Array<Post>>,
+  'getPlayerApplications' : ActorMethod<[], Array<Application>>,
   'getPlayerEndorsementSummary' : ActorMethod<[Principal], EndorsementSummary>,
   'getPlayerEndorsements' : ActorMethod<[Principal], Array<Endorsement>>,
   'getReadinessMetrics' : ActorMethod<[[] | [Principal]], ReadinessMetrics>,
@@ -203,6 +229,10 @@ export interface _SERVICE {
     EndorsementSummary
   >,
   'submitFeedback' : ActorMethod<[string], undefined>,
+  'updateApplicationStatus' : ActorMethod<
+    [bigint, ApplicationStatus],
+    undefined
+  >,
   'updateReadinessRequirement' : ActorMethod<[bigint], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
