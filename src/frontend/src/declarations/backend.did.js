@@ -222,6 +222,8 @@ export const idlService = IDL.Service({
     ),
   'createPost' : IDL.Func([IDL.Text, IDL.Opt(ExternalBlob)], [], []),
   'deleteEndorsement' : IDL.Func([IDL.Nat], [EndorsementSummary], []),
+  'deletePost' : IDL.Func([IDL.Nat], [], []),
+  'editPost' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'getAllEndorsements' : IDL.Func([], [IDL.Vec(Endorsement)], ['query']),
   'getAllFeedback' : IDL.Func([], [IDL.Vec(Feedback)], ['query']),
   'getAllHiringRequirements' : IDL.Func(
@@ -511,6 +513,8 @@ export const idlFactory = ({ IDL }) => {
       ),
     'createPost' : IDL.Func([IDL.Text, IDL.Opt(ExternalBlob)], [], []),
     'deleteEndorsement' : IDL.Func([IDL.Nat], [EndorsementSummary], []),
+    'deletePost' : IDL.Func([IDL.Nat], [], []),
+    'editPost' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'getAllEndorsements' : IDL.Func([], [IDL.Vec(Endorsement)], ['query']),
     'getAllFeedback' : IDL.Func([], [IDL.Vec(Feedback)], ['query']),
     'getAllHiringRequirements' : IDL.Func(

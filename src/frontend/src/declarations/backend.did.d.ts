@@ -196,6 +196,8 @@ export interface _SERVICE {
   >,
   'createPost' : ActorMethod<[string, [] | [ExternalBlob]], undefined>,
   'deleteEndorsement' : ActorMethod<[bigint], EndorsementSummary>,
+  'deletePost' : ActorMethod<[bigint], undefined>,
+  'editPost' : ActorMethod<[bigint, string], undefined>,
   'getAllEndorsements' : ActorMethod<[], Array<Endorsement>>,
   'getAllFeedback' : ActorMethod<[], Array<Feedback>>,
   'getAllHiringRequirements' : ActorMethod<[], Array<HiringRequirement>>,

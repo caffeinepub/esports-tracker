@@ -1283,3 +1283,4 @@ actor {
     applications.add(applicationId, updatedApplication);
   };
 };
+

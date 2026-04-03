@@ -36,7 +36,7 @@ import { Textarea } from "./ui/textarea";
 
 interface PostCardProps {
   post: Post;
-  currentUserId?: Principal;
+  currentUserId?: Principal | string;
 }
 
 export default function PostCard({ post, currentUserId }: PostCardProps) {
@@ -72,7 +72,16 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  const isOwnPost = currentUserId?.toString() === post.userId.toString();
+  // Convert both to string for safe comparison (fixes Principal vs string type mismatch)
+  const currentUserIdStr = currentUserId ? String(currentUserId) : null;
+  const postOwnerIdStr = String(post.userId);
+  const isOwnPost = !!currentUserIdStr && currentUserIdStr === postOwnerIdStr;
+
+  // Debug logs — visible in browser console
+  console.log("[PostCard] currentUserId:", currentUserIdStr);
+  console.log("[PostCard] post.userId:", postOwnerIdStr);
+  console.log("[PostCard] isOwnPost:", isOwnPost);
+
   const globalReadinessScore = author ? Number(author.globalReadinessScore) : 0;
 
   const handleDelete = async () => {
@@ -80,6 +89,23 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
       "[PostCard] handleDelete called for postId:",
       post.id.toString(),
     );
+    console.log("[PostCard] currentUserId at delete time:", currentUserIdStr);
+    console.log("[PostCard] post.userId at delete time:", postOwnerIdStr);
+    console.log(
+      "[PostCard] ownership check:",
+      currentUserIdStr === postOwnerIdStr,
+    );
+
+    // Ownership check before calling backend
+    if (!currentUserIdStr) {
+      toast.error("You must be logged in to delete posts");
+      return;
+    }
+    if (currentUserIdStr !== postOwnerIdStr) {
+      toast.error("You cannot modify this post");
+      return;
+    }
+
     setDeleteDialogOpen(false); // close dialog immediately
     try {
       await deletePost.mutateAsync(post.id);
@@ -89,24 +115,46 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
       );
       toast.success("Post deleted successfully");
     } catch (err) {
-      console.error("[PostCard] delete failed:", err);
-      toast.error("Failed to delete post");
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error("[PostCard] delete failed:", errorMsg);
+      toast.error(`Failed to delete post: ${errorMsg.slice(0, 80)}`);
     }
   };
 
   const handleEditOpen = () => {
+    // Ownership check before opening edit dialog
+    if (!currentUserIdStr) {
+      toast.error("You must be logged in to edit posts");
+      return;
+    }
+    if (currentUserIdStr !== postOwnerIdStr) {
+      toast.error("You cannot modify this post");
+      return;
+    }
     setEditText(post.improvementText);
     setEditDialogOpen(true);
   };
 
   const handleEditSave = async () => {
     if (!editText.trim()) return;
+
+    console.log("[PostCard] handleEditSave for postId:", post.id.toString());
+    console.log("[PostCard] currentUserId at edit time:", currentUserIdStr);
+    console.log("[PostCard] post.userId at edit time:", postOwnerIdStr);
+
+    if (!currentUserIdStr || currentUserIdStr !== postOwnerIdStr) {
+      toast.error("You cannot modify this post");
+      return;
+    }
+
     try {
       await editPost.mutateAsync({ postId: post.id, newText: editText.trim() });
       toast.success("Post updated");
       setEditDialogOpen(false);
-    } catch {
-      toast.error("Failed to update post");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error("[PostCard] edit failed:", errorMsg);
+      toast.error(`Failed to update post: ${errorMsg.slice(0, 80)}`);
     }
   };
 

@@ -1,42 +1,31 @@
-# eSports Tracker
+# Esports Recruitment Platform
 
 ## Current State
-- Full dual-role app: Player and Team accounts
-- Players post daily skill updates, have readiness score, endorsements, timeline
-- Teams post hiring requirements, search talent via TalentFinder
-- Players can search team hiring posts via TeamSearchView (SystemHiringRequirements)
-- Backend has: User, UserProfile, TeamProfile, Post, HiringRequirement, SystemHiringRequirement, Endorsement models
-- No application/apply flow exists yet
-- No Applications Received section on Team Dashboard
+
+The platform has `deletePost(postId)` and `editPost(postId, newText)` defined in the Motoko backend (`src/backend/main.mo`), but these methods are **missing from the generated Candid IDL** (`src/frontend/src/declarations/backend.did.d.ts` and `backend.did.js`). As a result, the frontend `backend.ts` wrapper tries to call `this.actor.deletePost(...)` which fails at runtime because the Candid actor doesn't know about this method.
+
+Additionally, the frontend `PostCard.tsx` ownership comparison needs to be hardened with proper type coercion and debug logging.
 
 ## Requested Changes (Diff)
 
 ### Add
-- `Application` data model: { id, playerId, teamId, requirementId, roleApplied, status (Pending|Accepted|Rejected), createdAt }
-- Backend function `applyToRequirement(requirementId)` — player-only, creates Application with status Pending, prevents duplicate applications
-- Backend function `getApplicationsForTeam()` — team-only, returns all applications for requirements posted by caller's team, enriched with player username and readiness
-- Backend function `getPlayerApplications()` — player-only, returns all applications submitted by caller
-- Backend function `updateApplicationStatus(applicationId, status)` — team-only, updates status to Accepted or Rejected
-- `RequirementDetailModal` component: shown when player clicks a team requirement card in TeamSearchView; displays team name, role, game, min readiness score, description; shows "Apply for This Role" button (player-only); prevents duplicate application
-- `ApplicationsReceivedSection` component: shown on Team Dashboard home or as a tab; lists applicants with player name, role applied, readiness score, status badge; Accept/Reject buttons on Pending items
-- "My Applications" section on Player Dashboard showing application status per team
+- Debug logging in PostCard: log `currentUserId`, `post.userId`, and comparison result before any delete/edit action
+- Pre-action user registration check: before delete/edit, verify user is registered (call `getCurrentUser` or ensure actor is ready)
+- Ownership check with string coercion: `String(post.userId) === String(currentUserId)`
 
 ### Modify
-- `TeamSearchView`: make requirement cards clickable to open RequirementDetailModal
-- `TeamHomeSection`: add "Applications Received" tile / section
-- `TeamDashboard`: support "applications" view
-- `useQueries.ts`: add hooks for applyToRequirement, getApplicationsForTeam, getPlayerApplications, updateApplicationStatus
-- `PlayerDashboard`: expose "My Applications" view
+- Regenerate Motoko backend so `deletePost` and `editPost` are included in the Candid IDL declarations
+- `PostCard.tsx`: convert both `post.userId` and `currentUserId` to string before comparison (type-safe ownership check)
+- `PostCard.tsx`: add console.log for debug of currentUserId, post.userId, and isOwnPost
+- `useDeletePost` and `useEditPost` hooks: add better error logging that shows the actual error message
+- `FeedView.tsx`: ensure `currentUserId` is passed correctly and falls back to `getCurrentUser` if profile is null
 
 ### Remove
 - Nothing removed
 
 ## Implementation Plan
-1. Add Application type, state map, and counter to main.mo
-2. Add applyToRequirement, getApplicationsForTeam, getPlayerApplications, updateApplicationStatus functions
-3. Add useApplyToRequirement, useGetApplicationsForTeam, useGetPlayerApplications, useUpdateApplicationStatus hooks in useQueries.ts
-4. Build RequirementDetailModal component for player side
-5. Wire modal into TeamSearchView card clicks
-6. Build ApplicationsReceivedSection for team dashboard
-7. Add applications view to TeamDashboard and TeamHomeSection tile
-8. Add My Applications panel to PlayerDashboard
+
+1. Regenerate backend Motoko code to ensure `deletePost` and `editPost` are in the Candid interface
+2. Update `PostCard.tsx` to use `String()` coercion for ownership comparison and add debug logs
+3. Update `FeedView.tsx` to use both `getCurrentUser` and `getCallerUserProfile` so `currentUserId` is always available
+4. Update mutation hooks to surface clearer error messages

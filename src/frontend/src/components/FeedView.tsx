@@ -1,7 +1,10 @@
 import { Info, Target, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import type { Post } from "../backend";
-import { useGetCallerUserProfile } from "../hooks/useQueries";
+import {
+  useGetCallerUserProfile,
+  useGetCurrentUser,
+} from "../hooks/useQueries";
 import PostCard from "./PostCard";
 import ReadinessBreakdownModal from "./ReadinessBreakdownModal";
 import { Card, CardContent } from "./ui/card";
@@ -14,8 +17,16 @@ interface FeedViewProps {
 }
 
 export default function FeedView({ feed, isLoading }: FeedViewProps) {
-  const { data: currentUser } = useGetCallerUserProfile();
+  const { data: currentUser } = useGetCurrentUser();
+  const { data: currentProfile } = useGetCallerUserProfile();
   const [breakdownOpen, setBreakdownOpen] = useState(false);
+
+  // Get the current user's Principal ID for ownership checks.
+  // Prefer the User record (always available after login) over the profile.
+  // Convert to string immediately so comparisons are always string vs string.
+  const currentUserId = currentUser?.id ?? currentProfile?.id;
+
+  console.log("[FeedView] currentUserId:", currentUserId?.toString());
 
   if (isLoading) {
     return (
@@ -39,22 +50,19 @@ export default function FeedView({ feed, isLoading }: FeedViewProps) {
     );
   }
 
-  const globalReadinessScore = currentUser
-    ? Number(currentUser.globalReadinessScore)
+  const globalReadinessScore = currentProfile
+    ? Number(currentProfile.globalReadinessScore)
     : 0;
-  const readinessRequirement = currentUser
-    ? Number(currentUser.readinessRequirement)
+  const readinessRequirement = currentProfile
+    ? Number(currentProfile.readinessRequirement)
     : 0;
 
-  // Determine if user has active team requirement or has applied to a team
-  // For now, we'll show the team readiness requirement if it's set (> 0)
-  // In a full implementation, this would check for active applications
   const hasActiveTeamRequirement = readinessRequirement > 0;
 
   return (
     <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
       {/* Readiness Metrics Banner */}
-      {currentUser && (
+      {currentProfile && (
         <div className="space-y-4">
           {/* Global Readiness Score */}
           <Card className="border-border">
@@ -85,7 +93,6 @@ export default function FeedView({ feed, isLoading }: FeedViewProps) {
                 </div>
                 <Progress value={globalReadinessScore} className="h-2" />
 
-                {/* Dynamic micro-explanation */}
                 {globalReadinessScore < 70 && (
                   <p className="text-xs text-muted-foreground pl-6 flex items-center gap-1.5">
                     <span className="text-green-500">🟢</span>
@@ -121,8 +128,6 @@ export default function FeedView({ feed, isLoading }: FeedViewProps) {
                     value={readinessRequirement}
                     className="h-2 bg-muted"
                   />
-
-                  {/* Conditional micro-explanation */}
                   <p className="text-xs text-muted-foreground pl-6 flex items-center gap-1.5">
                     <span>🔧</span>
                     Improve aim & Post 2 Clips
@@ -169,7 +174,7 @@ export default function FeedView({ feed, isLoading }: FeedViewProps) {
             <PostCard
               key={post.id.toString()}
               post={post}
-              currentUserId={currentUser?.id}
+              currentUserId={currentUserId}
             />
           ))}
         </div>
